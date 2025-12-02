@@ -4,7 +4,7 @@ import Elysia, { env } from "elysia";
 
 import { apiRoute } from "~/routes/api";
 
-export default new Elysia()
+new Elysia()
 	.onError(({ code, error, set, status }) => {
 		switch (code) {
 			case "NOT_FOUND":
