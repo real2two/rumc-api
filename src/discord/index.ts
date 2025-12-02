@@ -2,10 +2,7 @@ import { Client } from "@buape/carbon";
 import { env } from "elysia";
 
 import { GuestCommand } from "./commands/guests";
-import {
-	CreateVerifyModalCommand,
-	VerifyModalInitialModal,
-} from "./commands/verify";
+import { CreateVerifyModalCommand } from "./commands/verify";
 import { WhoIsCommand } from "./commands/whois";
 
 export const client = new Client(
