@@ -216,7 +216,7 @@ export class VerifyModalInitialModal extends Modal {
 			from: `"RUMC Verification" <${env.SMTP_USER}>`,
 			to: email,
 			subject: "Verification code for RUMC",
-			text: `The verification code is "${code}".`,
+			text: `The verification code is: ${code}`,
 		});
 
 		return interaction.reply({
