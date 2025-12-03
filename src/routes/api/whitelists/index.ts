@@ -30,7 +30,7 @@ const userInputUpdate = t.Object({
 const userInputCreation = t.Union([
 	t.Object({
 		email: t.String({ format: "email" }),
-		parent_id: t.Null({ default: null }),
+		parent_id: t.Null(),
 
 		uuid: t.String({ format: "uuid" }),
 		discord_id: t.Union([t.String({ pattern: Pattern.Snowflake }), t.Null()]),
@@ -38,7 +38,7 @@ const userInputCreation = t.Union([
 		banned: t.Boolean(),
 	}),
 	t.Object({
-		email: t.Null({ default: null }),
+		email: t.Union([t.String({ format: "email" }), t.Null()]),
 		parent_id: t.String({ format: "uuid" }),
 
 		uuid: t.String({ format: "uuid" }),

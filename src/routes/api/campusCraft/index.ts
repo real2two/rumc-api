@@ -11,7 +11,7 @@ const userObject = t.Object(
 		email: t.Union([
 			t.String({
 				format: "email",
-				description: "Email the user is verified with",
+				description: "Email of the user (guests can have emails)",
 			}),
 			t.Null({
 				description: "No email provided (for guests)",
