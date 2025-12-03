@@ -402,7 +402,7 @@ export function setVerificationCode(
 		`rumc:verify-discord:${userId}`,
 		JSON.stringify(value),
 		"EX",
-		900,
+		900, // 15 minutes
 	);
 }
 
