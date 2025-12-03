@@ -9,6 +9,7 @@ declare global {
 			CORS_ORIGIN?: string;
 
 			POSTGRES_URL: string;
+			REDIS_URL: string;
 
 			SMTP_HOST: string;
 			SMTP_PORT: string;

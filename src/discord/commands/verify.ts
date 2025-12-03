@@ -14,6 +14,7 @@ import {
 	TextInput,
 	TextInputStyle,
 } from "@buape/carbon";
+import { redis } from "bun";
 import { eq } from "drizzle-orm";
 import { env } from "elysia";
 import { db } from "~/db";
@@ -24,10 +25,12 @@ import { transporter } from "~/utils/mail";
 import { getMinecraftPlayer } from "~/utils/minecraft";
 import { Regex } from "~/utils/regex";
 
-const verificationCodes = new Map<
-	string,
-	{ attempts: number; code: string; email: string; uuid: string }
->();
+export interface VerificationCodeDiscord {
+	attempts: number;
+	code: string;
+	email: string;
+	uuid: string;
+}
 
 export class VerifyModalCodeModal extends Modal {
 	title = "Enter the verification code";
@@ -50,7 +53,8 @@ export class VerifyModalCodeModal extends Modal {
 		}
 
 		// Get verification code
-		const verificationCode = verificationCodes.get(interaction.userId);
+
+		const verificationCode = await getVerificationCode(interaction.userId);
 		if (!verificationCode) {
 			return interaction.update({
 				content:
@@ -63,7 +67,7 @@ export class VerifyModalCodeModal extends Modal {
 		const code = interaction.fields.getText("code");
 		if (verificationCode.code !== code) {
 			if (++verificationCode.attempts >= 3) {
-				verificationCodes.delete(interaction.userId);
+				await deleteVerificationCode(interaction.userId);
 
 				return interaction.update({
 					content:
@@ -78,7 +82,7 @@ export class VerifyModalCodeModal extends Modal {
 		}
 
 		// Verify the user
-		verificationCodes.delete(interaction.userId);
+		await deleteVerificationCode(interaction.userId);
 
 		try {
 			await db.insert(serverWhitelists).values({
@@ -198,10 +202,9 @@ export class VerifyModalInitialModal extends Modal {
 
 		// Save verification code
 		const code = createCode(32);
-		verificationCodes.set(interaction.userId, {
+		await setVerificationCode(interaction.userId, {
 			attempts: 0,
 			code,
-
 			email,
 			uuid: player.id,
 		});
@@ -383,4 +386,26 @@ export class CreateVerifyModalCommand extends Command {
 			components: [new Row([new VerifyModalInitialButton()])],
 		});
 	}
+}
+
+export async function getVerificationCode(userId: string) {
+	const value = await redis.get(`rumc:verify-discord:${userId}`);
+	if (!value) return;
+	return JSON.parse(value) as VerificationCodeDiscord;
+}
+
+export function setVerificationCode(
+	userId: string,
+	value: VerificationCodeDiscord,
+) {
+	return redis.set(
+		`rumc:verify-discord:${userId}`,
+		JSON.stringify(value),
+		"EX",
+		900,
+	);
+}
+
+export function deleteVerificationCode(userId: string) {
+	return redis.del(`rumc:verify-discord:${userId}`);
 }
