@@ -53,7 +53,6 @@ export class VerifyModalCodeModal extends Modal {
 		}
 
 		// Get verification code
-
 		const verificationCode = await getVerificationCode(interaction.userId);
 		if (!verificationCode) {
 			return interaction.update({
@@ -390,7 +389,7 @@ export class CreateVerifyModalCommand extends Command {
 
 export async function getVerificationCode(userId: string) {
 	const value = await redis.get(`rumc:verify-discord:${userId}`);
-	if (!value) return;
+	if (!value) return null;
 	return JSON.parse(value) as VerificationCodeDiscord;
 }
 
