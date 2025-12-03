@@ -74,6 +74,7 @@ export class VerifyModalCodeModal extends Modal {
 					components: [],
 				});
 			}
+			await setVerificationCode(interaction.userId, verificationCode);
 
 			return interaction.update({
 				content: "❌ Incorrect code! Please try again.",
