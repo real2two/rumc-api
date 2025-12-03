@@ -17,6 +17,8 @@ const whitelistObject = t.Object({
 	uuid: t.Union([t.String(), t.Null()]),
 	discord_id: t.Union([t.String(), t.Null()]),
 
+	banned: t.Boolean(),
+
 	created_at: t.Date(),
 });
 

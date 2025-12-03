@@ -42,6 +42,7 @@ export const campusCraftRoutes = new Elysia({
 		async ({ query }) => {
 			const total = await db.$count(serverWhitelists);
 			const users = await db.query.serverWhitelists.findMany({
+				where: eq(serverWhitelists.banned, false),
 				orderBy: desc(serverWhitelists.created_at),
 				limit: query.limit,
 				offset: query.offset,
@@ -94,15 +95,18 @@ export const campusCraftRoutes = new Elysia({
 			}
 
 			const relations = await db.query.serverWhitelists.findMany({
-				where: user.parent_id
-					? and(
-							ne(serverWhitelists.id, user.id),
-							or(
-								eq(serverWhitelists.id, user.parent_id),
-								eq(serverWhitelists.parent_id, user.parent_id),
-							),
-						)
-					: eq(serverWhitelists.parent_id, user.id),
+				where: and(
+					eq(serverWhitelists.banned, false),
+					user.parent_id
+						? and(
+								ne(serverWhitelists.id, user.id),
+								or(
+									eq(serverWhitelists.id, user.parent_id),
+									eq(serverWhitelists.parent_id, user.parent_id),
+								),
+							)
+						: eq(serverWhitelists.parent_id, user.id),
+				),
 				orderBy: desc(serverWhitelists.created_at),
 			});
 
