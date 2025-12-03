@@ -241,7 +241,10 @@ export const whitelistsRoute = new Elysia({
 				204: t.Literal("No Content"),
 				404: t.Object({ error: t.Literal("not_found") }),
 			},
-			detail: { description: "Update a whitelisted player" },
+			detail: {
+				description:
+					"Update a whitelisted player (keep in mind: if the player is banned, they won't be kicked off the server)",
+			},
 			tags: ["Whitelists"],
 		},
 	)
@@ -290,7 +293,10 @@ export const whitelistsRoute = new Elysia({
 				204: t.Literal("No Content"),
 				404: t.Object({ error: t.Literal("not_found") }),
 			},
-			detail: { description: "Delete a whitelisted player" },
+			detail: {
+				description:
+					"Delete a whitelisted player (keep in mind: if the player is in the server, they won't be kicked off)",
+			},
 			tags: ["Whitelists"],
 		},
 	);

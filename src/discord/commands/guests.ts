@@ -11,7 +11,7 @@ import { db } from "~/db";
 import { serverWhitelists } from "~/db/schema";
 import {
 	grantDiscordVerifiedRole,
-	revokeDiscordVerifiedRole,
+	// revokeDiscordVerifiedRole,
 } from "~/discord/utils";
 import { getMinecraftPlayer } from "~/utils/minecraft";
 
@@ -200,70 +200,70 @@ export class GuestAddCommand extends Command {
 	}
 }
 
-export class GuestRemoveCommand extends Command {
-	name = "remove";
-	override description = "Remove a guest from the server";
-	override options = [
-		{
-			name: "user",
-			type: ApplicationCommandOptionType.User as const,
-			description: "The user to remove",
-			required: true,
-		},
-	];
+// export class GuestRemoveCommand extends Command {
+// 	name = "remove";
+// 	override description = "Remove a guest from the server";
+// 	override options = [
+// 		{
+// 			name: "user",
+// 			type: ApplicationCommandOptionType.User as const,
+// 			description: "The user to remove",
+// 			required: true,
+// 		},
+// 	];
 
-	async run(interaction: CommandInteraction) {
-		if (!interaction.userId) return;
+// 	async run(interaction: CommandInteraction) {
+// 		if (!interaction.userId) return;
 
-		// Options
-		const guestUser = interaction.options.getUser("user");
-		if (!guestUser) return;
+// 		// Options
+// 		const guestUser = interaction.options.getUser("user");
+// 		if (!guestUser) return;
 
-		// Get user
-		const whitelisted = await db.query.serverWhitelists.findFirst({
-			columns: { id: true },
-			where: and(
-				eq(serverWhitelists.discord_id, interaction.userId),
-				isNull(serverWhitelists.parent_id),
-			),
-		});
-		if (!whitelisted) {
-			return interaction.reply({
-				content: "❌ You cannot run this command.",
-				ephemeral: true,
-			});
-		}
+// 		// Get user
+// 		const whitelisted = await db.query.serverWhitelists.findFirst({
+// 			columns: { id: true },
+// 			where: and(
+// 				eq(serverWhitelists.discord_id, interaction.userId),
+// 				isNull(serverWhitelists.parent_id),
+// 			),
+// 		});
+// 		if (!whitelisted) {
+// 			return interaction.reply({
+// 				content: "❌ You cannot run this command.",
+// 				ephemeral: true,
+// 			});
+// 		}
 
-		// Get guest to remove
-		const whitelistedGuest = await db.query.serverWhitelists.findFirst({
-			where: and(
-				eq(serverWhitelists.discord_id, guestUser.id),
-				eq(serverWhitelists.parent_id, whitelisted.id),
-			),
-		});
-		if (!whitelistedGuest) {
-			return interaction.reply({
-				content: "❌ Cannot find guest.",
-				ephemeral: true,
-			});
-		}
+// 		// Get guest to remove
+// 		const whitelistedGuest = await db.query.serverWhitelists.findFirst({
+// 			where: and(
+// 				eq(serverWhitelists.discord_id, guestUser.id),
+// 				eq(serverWhitelists.parent_id, whitelisted.id),
+// 			),
+// 		});
+// 		if (!whitelistedGuest) {
+// 			return interaction.reply({
+// 				content: "❌ Cannot find guest.",
+// 				ephemeral: true,
+// 			});
+// 		}
 
-		// Remove role from guest
-		if (whitelistedGuest.discord_id) {
-			await revokeDiscordVerifiedRole(whitelistedGuest.discord_id);
-		}
+// 		// Remove role from guest
+// 		if (whitelistedGuest.discord_id) {
+// 			await revokeDiscordVerifiedRole(whitelistedGuest.discord_id);
+// 		}
 
-		// Remove guest
-		await db
-			.delete(serverWhitelists)
-			.where(eq(serverWhitelists.id, whitelistedGuest.id));
+// 		// Remove guest
+// 		await db
+// 			.delete(serverWhitelists)
+// 			.where(eq(serverWhitelists.id, whitelistedGuest.id));
 
-		await interaction.reply({
-			content: `🗑️ Removed <@${guestUser.id}> as a guest!`,
-			allowedMentions: {},
-		});
-	}
-}
+// 		await interaction.reply({
+// 			content: `🗑️ Removed <@${guestUser.id}> as a guest!`,
+// 			allowedMentions: {},
+// 		});
+// 	}
+// }
 
 export class GuestCommand extends CommandWithSubcommands {
 	name = "guest";
@@ -274,6 +274,6 @@ export class GuestCommand extends CommandWithSubcommands {
 	subcommands = [
 		new GuestListCommand(),
 		new GuestAddCommand(),
-		new GuestRemoveCommand(),
+		// new GuestRemoveCommand(),
 	];
 }
