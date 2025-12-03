@@ -1,5 +1,5 @@
 {
-	"id": "20816d0c-9915-4a85-9d90-d242b5796c62",
+	"id": "e015ed0f-f205-418f-80e7-e6c794360c30",
 	"prevId": "00000000-0000-0000-0000-000000000000",
 	"version": "7",
 	"dialect": "postgresql",
@@ -30,7 +30,7 @@
 					"name": "uuid",
 					"type": "uuid",
 					"primaryKey": false,
-					"notNull": true
+					"notNull": false
 				},
 				"discord_id": {
 					"name": "discord_id",

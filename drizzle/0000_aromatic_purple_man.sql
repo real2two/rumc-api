@@ -2,7 +2,7 @@ CREATE TABLE "server_whitelists" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"email" text,
 	"parent_id" uuid,
-	"uuid" uuid NOT NULL,
+	"uuid" uuid,
 	"discord_id" text,
 	"banned" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,

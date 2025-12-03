@@ -17,7 +17,7 @@ export const serverWhitelists = pgTable("server_whitelists", {
 		(): AnyPgColumn => serverWhitelists.id,
 	),
 
-	uuid: uuid("uuid").unique().notNull(),
+	uuid: uuid("uuid").unique(),
 	discord_id: text("discord_id").unique(),
 
 	banned: boolean("banned").notNull().default(false),

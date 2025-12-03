@@ -37,6 +37,13 @@ class WhoIsDiscordCommand extends Command {
 				ephemeral: true,
 			});
 		}
+		if (!whitelisted.uuid) {
+			return interaction.reply({
+				content:
+					"❌ The following user doesn't have a Minecraft account linked.",
+				ephemeral: true,
+			});
+		}
 
 		const player = await getMinecraftPlayer(whitelisted.uuid);
 		if (!player) {
@@ -57,9 +64,11 @@ class WhoIsDiscordCommand extends Command {
 				where: eq(serverWhitelists.id, whitelisted.parent_id),
 			});
 			if (parent) {
-				const parentPlayer = await getMinecraftPlayer(parent.uuid);
+				const parentPlayer = parent.uuid
+					? await getMinecraftPlayer(parent.uuid)
+					: null;
 				footerText = parent.discord_id
-					? `Invited by <@${parent.discord_id}> / \`${parentPlayer?.username || parent.uuid}\` 👽`
+					? `Invited by <@${parent.discord_id}>${parent.uuid ? ` / \`${parentPlayer?.username || parent.uuid}\`` : ""} 👽`
 					: `Invited by \`${parentPlayer?.username}\` 👽`;
 			}
 		}
@@ -120,9 +129,11 @@ class WhoIsMinecraftCommand extends Command {
 				where: eq(serverWhitelists.id, whitelisted.parent_id),
 			});
 			if (parent) {
-				const parentPlayer = await getMinecraftPlayer(parent.uuid);
+				const parentPlayer = parent.uuid
+					? await getMinecraftPlayer(parent.uuid)
+					: null;
 				footerText = parent.discord_id
-					? `Invited by <@${parent.discord_id}> / \`${parentPlayer?.username || parent.uuid}\` 👽`
+					? `Invited by <@${parent.discord_id}>${parent.uuid ? ` / \`${parentPlayer?.username || parent.uuid}\`` : ""} 👽`
 					: `Invited by \`${parentPlayer?.username}\` 👽`;
 			}
 		}

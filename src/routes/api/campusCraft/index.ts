@@ -21,7 +21,10 @@ const userObject = t.Object(
 			t.String({ description: "Internal ID of the parent user" }),
 			t.Null({ description: "Not invited by another user (for non-guests)" }),
 		]),
-		uuid: t.String({ description: "Minecraft player UUID" }),
+		uuid: t.Union([
+			t.String({ description: "Minecraft account UUID" }),
+			t.Null({ description: "No Minecraft account linked" }),
+		]),
 		discord_id: t.Union([
 			t.String({ description: "Discord user ID (snowflake)" }),
 			t.Null({ description: "No Discord account is linked" }),

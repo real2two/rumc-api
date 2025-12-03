@@ -14,14 +14,14 @@ const whitelistObject = t.Object({
 	email: t.Union([t.String(), t.Null()]),
 	parent_id: t.Union([t.String(), t.Null()]),
 
-	uuid: t.String(),
+	uuid: t.Union([t.String(), t.Null()]),
 	discord_id: t.Union([t.String(), t.Null()]),
 
 	created_at: t.Date(),
 });
 
 const userInputUpdate = t.Object({
-	uuid: t.String({ format: "uuid" }),
+	uuid: t.Union([t.String({ format: "uuid" }), t.Null()]),
 	discord_id: t.Union([t.String({ pattern: Pattern.Snowflake }), t.Null()]),
 
 	banned: t.Boolean(),
@@ -32,7 +32,7 @@ const userInputCreation = t.Union([
 		email: t.String({ format: "email" }),
 		parent_id: t.Null(),
 
-		uuid: t.String({ format: "uuid" }),
+		uuid: t.Union([t.String({ format: "uuid" }), t.Null()]),
 		discord_id: t.Union([t.String({ pattern: Pattern.Snowflake }), t.Null()]),
 
 		banned: t.Boolean(),
@@ -41,7 +41,7 @@ const userInputCreation = t.Union([
 		email: t.Union([t.String({ format: "email" }), t.Null()]),
 		parent_id: t.String({ format: "uuid" }),
 
-		uuid: t.String({ format: "uuid" }),
+		uuid: t.Union([t.String({ format: "uuid" }), t.Null()]),
 		discord_id: t.Union([t.String({ pattern: Pattern.Snowflake }), t.Null()]),
 
 		banned: t.Boolean(),

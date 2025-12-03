@@ -19,8 +19,8 @@ import { env } from "elysia";
 import { db } from "~/db";
 import { serverWhitelists } from "~/db/schema";
 import { grantDiscordVerifiedRole } from "~/discord/utils";
-import { transporter } from "~/mail";
 import { createCode } from "~/utils/crypto";
+import { transporter } from "~/utils/mail";
 import { getMinecraftPlayer } from "~/utils/minecraft";
 import { Regex } from "~/utils/regex";
 
@@ -46,7 +46,6 @@ export class VerifyModalCodeModal extends Modal {
 			return interaction.update({
 				content: "❌ You are already verified!",
 				components: [],
-				ephemeral: true,
 			});
 		}
 
@@ -57,7 +56,6 @@ export class VerifyModalCodeModal extends Modal {
 				content:
 					"❌ Your verification code has expired. Please try again from the beginning.",
 				components: [],
-				ephemeral: true,
 			});
 		}
 
@@ -71,13 +69,11 @@ export class VerifyModalCodeModal extends Modal {
 					content:
 						"🗑️ Incorrect code! You have failed entering the code too many times.",
 					components: [],
-					ephemeral: true,
 				});
 			}
 
 			return interaction.update({
 				content: "❌ Incorrect code! Please try again.",
-				ephemeral: true,
 			});
 		}
 
@@ -97,7 +93,6 @@ export class VerifyModalCodeModal extends Modal {
 				content:
 					"🛑 An unexpected error occurred when trying to verify. Please try again from the beginning.",
 				components: [],
-				ephemeral: true,
 			});
 		}
 
@@ -226,6 +221,79 @@ export class VerifyModalInitialModal extends Modal {
 		});
 	}
 }
+export class VerifyModalMinecraftModal extends Modal {
+	title = "Link your Minecraft account";
+	customId = "verify-modal-minecraft";
+	override components = [new VerifyModalInitialUsernameLabel()];
+
+	async run(interaction: ModalInteraction) {
+		if (!interaction.userId) return;
+
+		// Check if a user is already verified
+		const existsUser = await db.query.serverWhitelists.findFirst({
+			columns: { uuid: true },
+			where: eq(serverWhitelists.discord_id, interaction.userId),
+		});
+		if (!existsUser) {
+			return interaction.reply({
+				content:
+					"🛑 An unexpected error has occurred. Please try again from the beginning.",
+				ephemeral: true,
+			});
+		}
+		if (existsUser.uuid) {
+			return interaction.reply({
+				content: "❌ Your Minecraft account is already verified!",
+				ephemeral: true,
+			});
+		}
+
+		// Get Minecraft UUID
+		const username = interaction.fields.getText("username");
+		if (!username || !Regex.MinecraftUsername.test(username)) {
+			return interaction.reply({
+				content: "❌ The Minecraft username was formatted improperly.",
+				ephemeral: true,
+			});
+		}
+
+		// Get Minecraft UUID
+		const player = await getMinecraftPlayer(username);
+		if (!player) {
+			return interaction.reply({
+				content: "❌ Failed to find player.",
+				ephemeral: true,
+			});
+		}
+
+		// Update UUID
+		try {
+			await db.update(serverWhitelists).set({ uuid: player.id });
+		} catch (err) {
+			console.error(err);
+			return interaction.reply({
+				content:
+					"🛑 An unexpected error occurred when trying to link your Minecraft account. Please try again from the beginning.",
+				ephemeral: true,
+			});
+		}
+
+		// Grant user verified role if the user doesn't already have it
+		if (
+			!interaction.member?.roles.find(
+				(r) => r.id === env.DISCORD_VERIFIED_ROLE_ID,
+			)
+		) {
+			await grantDiscordVerifiedRole(interaction.userId);
+		}
+
+		// Respond to interaction
+		await interaction.reply({
+			content: "✅ You have linked your Minecraft account!",
+			ephemeral: true,
+		});
+	}
+}
 class VerifyModalInitialEmailLabel extends Label {
 	label = "What is your ScarletMail email address?";
 	override description = "https://mail.scarletmail.rutgers.edu";
@@ -263,11 +331,11 @@ class VerifyModalInitialButton extends Button {
 		if (!interaction.userId) return;
 
 		// Check if a user is already verified
-		const exists = await db.$count(
-			serverWhitelists,
-			eq(serverWhitelists.discord_id, interaction.userId),
-		);
-		if (exists) {
+		const existsUser = await db.query.serverWhitelists.findFirst({
+			columns: { uuid: true },
+			where: eq(serverWhitelists.discord_id, interaction.userId),
+		});
+		if (existsUser) {
 			// Give role if the user doesn't have the role
 			if (
 				!interaction.member?.roles.find(
@@ -275,10 +343,17 @@ class VerifyModalInitialButton extends Button {
 				)
 			) {
 				await grantDiscordVerifiedRole(interaction.userId);
-				await interaction.reply({
-					content: `✨ Since you previously been verified into this server, you've been verified!`,
-					ephemeral: true,
-				});
+				if (existsUser.uuid) {
+					return interaction.reply({
+						content: `✨ Since you previously been verified into this server, you've been verified!`,
+						ephemeral: true,
+					});
+				}
+			}
+
+			if (!existsUser.uuid) {
+				// If Minecraft account isn't linked, ask to link
+				return interaction.showModal(new VerifyModalMinecraftModal());
 			}
 
 			// Else error that the user is already verified

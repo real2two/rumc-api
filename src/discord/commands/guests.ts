@@ -51,12 +51,13 @@ export class GuestListCommand extends Command {
 		// Parse guests
 		const guestsText: string[] = [];
 		for (const guest of guests) {
-			const usernameOrUuid =
-				(await getMinecraftPlayer(guest.uuid))?.username || guest.uuid;
+			const usernameOrUuid = guest.uuid
+				? (await getMinecraftPlayer(guest.uuid))?.username || guest.uuid
+				: null;
 			guestsText.push(
 				guest.discord_id
-					? `- <@${guest.discord_id}> / ${usernameOrUuid}`
-					: `- ${usernameOrUuid}`,
+					? `- <@${guest.discord_id}>${usernameOrUuid ? ` / \`${usernameOrUuid}\`` : ""}`
+					: `- ${usernameOrUuid ? `\`${usernameOrUuid}\`` : "Unknown user"}`,
 			);
 		}
 

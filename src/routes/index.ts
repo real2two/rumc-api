@@ -38,3 +38,5 @@ new Elysia()
 	)
 	.use(apiRoute)
 	.listen(env.PORT || 3000);
+
+console.info("Started RUMC API");
