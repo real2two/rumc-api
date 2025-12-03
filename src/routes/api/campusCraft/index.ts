@@ -81,11 +81,14 @@ export const campusCraftRoutes = new Elysia({
 		async ({ params, set }) => {
 			const isIdUuid = Regex.Uuid.test(params.id);
 			const user = await db.query.serverWhitelists.findFirst({
-				where: or(
-					...(isIdUuid ? [eq(serverWhitelists.id, params.id)] : []),
-					eq(serverWhitelists.email, params.id),
-					...(isIdUuid ? [eq(serverWhitelists.uuid, params.id)] : []),
-					eq(serverWhitelists.discord_id, params.id),
+				where: and(
+					eq(serverWhitelists.banned, false),
+					or(
+						...(isIdUuid ? [eq(serverWhitelists.id, params.id)] : []),
+						eq(serverWhitelists.email, params.id),
+						...(isIdUuid ? [eq(serverWhitelists.uuid, params.id)] : []),
+						eq(serverWhitelists.discord_id, params.id),
+					),
 				),
 			});
 
