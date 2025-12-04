@@ -191,7 +191,8 @@ export class VerifyModalInitialModal extends Modal {
 		const player = await getMinecraftPlayer(username);
 		if (!player) {
 			return interaction.reply({
-				content: "❌ Failed to find player.",
+				content:
+					"❌ Failed to find player with the provided Minecraft username.",
 				ephemeral: true,
 			});
 		}
@@ -255,7 +256,8 @@ export class VerifyModalMinecraftModal extends Modal {
 		const player = await getMinecraftPlayer(username);
 		if (!player) {
 			return interaction.reply({
-				content: "❌ Failed to find player.",
+				content:
+					"❌ Failed to find player with the provided Minecraft username.",
 				ephemeral: true,
 			});
 		}

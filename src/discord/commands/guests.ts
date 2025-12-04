@@ -114,8 +114,7 @@ export class GuestAddCommand extends Command {
 		const player = await getMinecraftPlayer(guestMinecraft);
 		if (!player) {
 			return interaction.reply({
-				content:
-					"❌ Failed to find player with the provided Minecraft username.",
+				content: "❌ Failed to find player with the provided username.",
 				ephemeral: true,
 			});
 		}

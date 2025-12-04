@@ -43,7 +43,7 @@ class WhoIsDiscordCommand extends Command {
 		const player = await getMinecraftPlayer(whitelisted.uuid);
 		if (!player) {
 			return interaction.reply({
-				content: `🛑 Failed to find player with the UUID \`${whitelisted.uuid}\`.`,
+				content: `🛑 Failed to find player with the Minecraft UUID \`${whitelisted.uuid}\`.`,
 				allowedMentions: {},
 			});
 		}
