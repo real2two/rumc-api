@@ -32,7 +32,7 @@ export async function isWhitelisted(id: string) {
 		serverWhitelists,
 		or(
 			...(isIdUuid ? [eq(serverWhitelists.id, id)] : []),
-			eq(serverWhitelists.email, id),
+			eq(serverWhitelists.email, id.toLowerCase()),
 			...(isIdUuid ? [eq(serverWhitelists.uuid, id)] : []),
 			eq(serverWhitelists.discord_id, id),
 		),
@@ -45,7 +45,7 @@ export async function getWhitelist(id: string) {
 	const user = await db.query.serverWhitelists.findFirst({
 		where: or(
 			...(isIdUuid ? [eq(serverWhitelists.id, id)] : []),
-			eq(serverWhitelists.email, id),
+			eq(serverWhitelists.email, id.toLowerCase()),
 			...(isIdUuid ? [eq(serverWhitelists.uuid, id)] : []),
 			eq(serverWhitelists.discord_id, id),
 		),
@@ -91,7 +91,7 @@ export async function addWhitelist(data: {
 	if (data.email) {
 		const usedEmail = await db.$count(
 			serverWhitelists,
-			eq(serverWhitelists.email, data.email),
+			eq(serverWhitelists.email, data.email.toLowerCase()),
 		);
 		if (usedEmail) return { error: Errors.EmailUsed };
 	}
@@ -130,10 +130,16 @@ export async function addWhitelist(data: {
 	}
 
 	try {
-		const [user] = await db.insert(serverWhitelists).values(data).returning({
-			id: serverWhitelists.id,
-			created_at: serverWhitelists.created_at,
-		});
+		const [user] = await db
+			.insert(serverWhitelists)
+			.values({
+				...data,
+				email: data.email?.toLowerCase(),
+			})
+			.returning({
+				id: serverWhitelists.id,
+				created_at: serverWhitelists.created_at,
+			});
 		if (!user) throw new Error("Failed to create user");
 
 		if (data.discord_id) {
@@ -160,7 +166,7 @@ export async function updateWhitelist(
 		columns: { id: true, discord_id: true },
 		where: or(
 			...(isIdUuid ? [eq(serverWhitelists.id, id)] : []),
-			eq(serverWhitelists.email, id),
+			eq(serverWhitelists.email, id.toLowerCase()),
 			...(isIdUuid ? [eq(serverWhitelists.uuid, id)] : []),
 			eq(serverWhitelists.discord_id, id),
 		),
@@ -200,7 +206,7 @@ export async function deleteWhitelist(id: string) {
 		columns: { id: true },
 		where: or(
 			...(isIdUuid ? [eq(serverWhitelists.id, id)] : []),
-			eq(serverWhitelists.email, id),
+			eq(serverWhitelists.email, id.toLowerCase()),
 			...(isIdUuid ? [eq(serverWhitelists.uuid, id)] : []),
 			eq(serverWhitelists.discord_id, id),
 		),

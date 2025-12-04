@@ -16,6 +16,7 @@ import {
 } from "@buape/carbon";
 import { env } from "elysia";
 import { grantDiscordVerifiedRole } from "~/discord/utils";
+import { ErrorCodes } from "~/types/errors";
 import { createCode } from "~/utils/crypto";
 import { transporter } from "~/utils/mail";
 import { getMinecraftPlayer } from "~/utils/minecraft";
@@ -70,7 +71,6 @@ export class VerifyModalCodeModal extends Modal {
 		if (verificationCode.code !== code) {
 			if (++verificationCode.attempts >= 3) {
 				await deleteVerificationCode(interaction.userId);
-
 				return interaction.update({
 					content:
 						"🗑️ Incorrect code! You have failed entering the code too many times.",
@@ -96,7 +96,19 @@ export class VerifyModalCodeModal extends Modal {
 				discord_id: interaction.userId,
 			});
 			if (error) {
-				throw new Error(`Failed to add whitelisted player (${error.code})`);
+				if (error.code === ErrorCodes.EmailUsed) {
+					const { error } = await updateWhitelist(verificationCode.email, {
+						uuid: verificationCode.uuid,
+						discord_id: interaction.userId,
+					});
+					if (error) {
+						throw new Error(
+							`Failed to update whitelisted player (${error.code})`,
+						);
+					}
+				} else {
+					throw new Error(`Failed to add whitelisted player (1 ${error.code})`);
+				}
 			}
 		} catch (err) {
 			console.error(err);
@@ -171,7 +183,7 @@ export class VerifyModalInitialModal extends Modal {
 		}
 
 		// Validate inputs
-		const email = interaction.fields.getText("email");
+		const email = interaction.fields.getText("email")?.toLowerCase();
 		const username = interaction.fields.getText("username");
 
 		if (!email || !Regex.ScarletMail.test(email)) {

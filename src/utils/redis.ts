@@ -13,7 +13,7 @@ export function setVerificationCode(
 ) {
 	return redis.set(
 		`rumc:verify-discord:${userId}`,
-		JSON.stringify(value),
+		JSON.stringify({ ...value, email: value.email.toLowerCase() }),
 		"EX",
 		900, // 15 minutes
 	);
