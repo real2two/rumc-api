@@ -9,21 +9,15 @@ import { Errors } from "~/types/errors";
 import { Regex } from "./regex";
 
 export async function listWhitelists({
-	unbannedOnly = false,
 	limit,
 	offset,
 }: {
-	unbannedOnly?: boolean;
 	limit?: number;
 	offset?: number;
 }) {
 	const [total, users] = await Promise.all([
-		db.$count(
-			serverWhitelists,
-			unbannedOnly ? eq(serverWhitelists.banned, false) : undefined,
-		),
+		db.$count(serverWhitelists),
 		db.query.serverWhitelists.findMany({
-			where: unbannedOnly ? eq(serverWhitelists.banned, false) : undefined,
 			orderBy: desc(serverWhitelists.created_at),
 			limit: limit,
 			offset: offset,

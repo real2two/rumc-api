@@ -31,6 +31,9 @@ const userObject = t.Object(
 			t.String({ description: "Discord user ID (snowflake)" }),
 			t.Null({ description: "No Discord account is linked" }),
 		]),
+		banned: t.Boolean({
+			description: "Whether or not the player is banned on the server",
+		}),
 	},
 	{ description: "A user object" },
 );
@@ -39,33 +42,29 @@ export const campusCraftRoutes = new Elysia({
 	prefix: "/campuscraft",
 })
 	.use(campusCraftAuthPlugin)
-	.get(
-		"/users",
-		({ query }) => listWhitelists({ ...query, unbannedOnly: true }),
-		{
-			query: t.Object({
-				limit: t.Integer({
-					description: "Limit how many users are returned",
-					minimum: 1,
-					maximum: 100,
-					default: 25,
-				}),
-				offset: t.Integer({
-					description: "Offset the users being returned",
-					minimum: 0,
-					default: 0,
-				}),
+	.get("/users", ({ query }) => listWhitelists(query), {
+		query: t.Object({
+			limit: t.Integer({
+				description: "Limit how many users are returned",
+				minimum: 1,
+				maximum: 100,
+				default: 25,
 			}),
-			response: {
-				200: t.Object({
-					total: t.Number({ description: "Total number of users" }),
-					users: t.Array(userObject, { description: "All users" }),
-				}),
-			},
-			detail: { description: "List users (CampusCraft)" },
-			tags: ["CampusCraft"],
+			offset: t.Integer({
+				description: "Offset the users being returned",
+				minimum: 0,
+				default: 0,
+			}),
+		}),
+		response: {
+			200: t.Object({
+				total: t.Number({ description: "Total number of users" }),
+				users: t.Array(userObject, { description: "All users" }),
+			}),
 		},
-	)
+		detail: { description: "List users (CampusCraft)" },
+		tags: ["CampusCraft"],
+	})
 	.get(
 		"/users/:id",
 		async ({ params, set }) => {
@@ -74,13 +73,9 @@ export const campusCraftRoutes = new Elysia({
 				set.status = error.status;
 				return { error: error.code };
 			}
-			if (user.banned) {
-				set.status = 404;
-				return { error: ErrorCodes.NotFound };
-			}
 
 			const { relations } = await getWhitelistRelations(user);
-			return { user, relations: relations.filter((r) => !r.banned) };
+			return { user, relations };
 		},
 		{
 			params: t.Object({
