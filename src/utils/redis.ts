@@ -1,5 +1,11 @@
 import { redis } from "bun";
-import type { VerificationCodeDiscord } from "~/discord/commands/verify";
+
+export interface VerificationCodeDiscord {
+	attempts: number;
+	code: string;
+	email: string;
+	uuid: string | null;
+}
 
 export async function getVerificationCode(userId: string) {
 	const value = await redis.get(`rumc:verify-discord:${userId}`);

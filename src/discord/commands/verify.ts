@@ -16,7 +16,6 @@ import {
 } from "@buape/carbon";
 import { env } from "elysia";
 import { grantDiscordVerifiedRole } from "~/discord/utils";
-import { ErrorCodes } from "~/types/errors";
 import { createCode } from "~/utils/crypto";
 import { transporter } from "~/utils/mail";
 import { getMinecraftPlayer } from "~/utils/minecraft";
@@ -32,13 +31,6 @@ import {
 	isWhitelisted,
 	updateWhitelist,
 } from "~/utils/whitelist";
-
-export interface VerificationCodeDiscord {
-	attempts: number;
-	code: string;
-	email: string;
-	uuid: string;
-}
 
 export class VerifyModalCodeModal extends Modal {
 	title = "Enter the verification code";
@@ -96,19 +88,7 @@ export class VerifyModalCodeModal extends Modal {
 				discord_id: interaction.userId,
 			});
 			if (error) {
-				if (error.code === ErrorCodes.EmailUsed) {
-					const { error } = await updateWhitelist(verificationCode.email, {
-						uuid: verificationCode.uuid,
-						discord_id: interaction.userId,
-					});
-					if (error) {
-						throw new Error(
-							`Failed to update whitelisted player (${error.code})`,
-						);
-					}
-				} else {
-					throw new Error(`Failed to add whitelisted player (1 ${error.code})`);
-				}
+				throw new Error(`Failed to update whitelisted player (${error.code})`);
 			}
 		} catch (err) {
 			console.error(err);
@@ -120,7 +100,15 @@ export class VerifyModalCodeModal extends Modal {
 		}
 
 		// Respond to interaction
-		await interaction.update({
+		if (!verificationCode.uuid) {
+			return interaction.update({
+				content:
+					"✅ You have been verified! Since you didn't provide a Minecraft username, you'll need to click \"Verify\" again to enter a Minecraft Java edition account to be whitelisted into the server.",
+				components: [],
+			});
+		}
+
+		return interaction.update({
 			content: "✅ You have been verified!",
 			components: [],
 		});
@@ -168,7 +156,7 @@ export class VerifyModalInitialModal extends Modal {
 	customId = "verify-modal-initial-submit";
 	override components = [
 		new VerifyModalInitialEmailLabel(),
-		new VerifyModalInitialUsernameLabel(),
+		new VerifyModalInitialUsernameOptionalLabel(),
 	];
 
 	async run(interaction: ModalInteraction) {
@@ -192,21 +180,26 @@ export class VerifyModalInitialModal extends Modal {
 				ephemeral: true,
 			});
 		}
-		if (!username || !Regex.MinecraftUsername.test(username)) {
-			return interaction.reply({
-				content: "❌ The Minecraft username was formatted improperly.",
-				ephemeral: true,
-			});
-		}
 
-		// Get Minecraft UUID
-		const player = await getMinecraftPlayer(username);
-		if (!player) {
-			return interaction.reply({
-				content:
-					"❌ Failed to find player with the provided Minecraft username.",
-				ephemeral: true,
-			});
+		let uuid: string | null = null;
+		if (username) {
+			// Validate Minecraft username
+			if (!Regex.MinecraftUsername.test(username)) {
+				return interaction.reply({
+					content: "❌ The Minecraft username was formatted improperly.",
+					ephemeral: true,
+				});
+			}
+			// Get Minecraft UUID
+			const player = await getMinecraftPlayer(username);
+			if (!player) {
+				return interaction.reply({
+					content:
+						"❌ Failed to find player with the provided Minecraft username.",
+					ephemeral: true,
+				});
+			}
+			uuid = player.id;
 		}
 
 		// Save verification code
@@ -215,7 +208,7 @@ export class VerifyModalInitialModal extends Modal {
 			attempts: 0,
 			code,
 			email,
-			uuid: player.id,
+			uuid,
 		});
 
 		// Send email for verification
@@ -303,10 +296,19 @@ class VerifyModalInitialEmailLabel extends Label {
 }
 class VerifyModalInitialUsernameLabel extends Label {
 	label = "What is your Minecraft username?";
-	override description = "Only Java edition accounts are supported currently";
+	override description = "Enter your Minecraft Java edition username";
 
 	constructor() {
-		super(new VerifyModalInitialInputUsername());
+		super(new VerifyModalInitialInputUsername({ required: true }));
+	}
+}
+class VerifyModalInitialUsernameOptionalLabel extends Label {
+	label = "What is your Minecraft username?";
+	override description =
+		"Enter your Minecraft Java edition username (optional)";
+
+	constructor() {
+		super(new VerifyModalInitialInputUsername({ required: false }));
 	}
 }
 class VerifyModalInitialInputEmail extends TextInput {
@@ -319,7 +321,12 @@ class VerifyModalInitialInputUsername extends TextInput {
 	customId = "username";
 	override style = TextInputStyle.Short;
 	override placeholder = "Herobrine";
-	override required = true;
+	override required = false;
+
+	constructor(opts: { required: boolean }) {
+		super();
+		this.required = opts.required;
+	}
 }
 
 class VerifyModalInitialButton extends Button {
