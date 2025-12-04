@@ -80,7 +80,7 @@ export const campusCraftRoutes = new Elysia({
 			}
 
 			const { relations } = await getWhitelistRelations(user);
-			return { user, relations };
+			return { user, relations: relations.filter((r) => !r.banned) };
 		},
 		{
 			params: t.Object({

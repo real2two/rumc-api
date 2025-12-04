@@ -18,7 +18,10 @@ export async function listWhitelists({
 	offset?: number;
 }) {
 	const [total, users] = await Promise.all([
-		db.$count(serverWhitelists),
+		db.$count(
+			serverWhitelists,
+			unbannedOnly ? eq(serverWhitelists.banned, false) : undefined,
+		),
 		db.query.serverWhitelists.findMany({
 			where: unbannedOnly ? eq(serverWhitelists.banned, false) : undefined,
 			orderBy: desc(serverWhitelists.created_at),
