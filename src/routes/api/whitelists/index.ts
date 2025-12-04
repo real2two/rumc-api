@@ -24,12 +24,14 @@ const whitelistObject = t.Object({
 	created_at: t.Date(),
 });
 
-const userInputUpdate = t.Object({
-	uuid: t.Union([t.String({ format: "uuid" }), t.Null()]),
-	discord_id: t.Union([t.String({ pattern: Pattern.Snowflake }), t.Null()]),
+const userInputUpdate = t.Partial(
+	t.Object({
+		uuid: t.Union([t.String({ format: "uuid" }), t.Null()]),
+		discord_id: t.Union([t.String({ pattern: Pattern.Snowflake }), t.Null()]),
 
-	banned: t.Boolean(),
-});
+		banned: t.Boolean(),
+	}),
+);
 
 const userInputCreation = t.Union([
 	t.Object({
