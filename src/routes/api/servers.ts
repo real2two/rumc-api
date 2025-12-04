@@ -51,7 +51,7 @@ export const serversRoutes = new Elysia({
 			200: t.Object({ online: t.Boolean(), players: t.Number() }),
 			500: t.Object({ error: t.Literal(ErrorCodes.InternalServerError) }),
 		},
-		detail: { description: "Get status of survival server" },
+		detail: { description: "Get status of a server" },
 		tags: ["Servers"],
 	},
 );
