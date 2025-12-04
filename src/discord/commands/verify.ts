@@ -303,9 +303,9 @@ class VerifyModalInitialUsernameLabel extends Label {
 	}
 }
 class VerifyModalInitialUsernameOptionalLabel extends Label {
-	label = "What is your Minecraft username?";
+	label = "What is your Minecraft username? (optional)";
 	override description =
-		"Enter your Minecraft Java edition username (optional)";
+		"Enter your Minecraft Java edition username (can do later)";
 
 	constructor() {
 		super(new VerifyModalInitialInputUsername({ required: false }));
