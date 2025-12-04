@@ -8,6 +8,8 @@ declare global {
 
 			CORS_ORIGIN?: string;
 
+			MINECRAFT_IP: string;
+
 			POSTGRES_URL: string;
 			REDIS_URL: string;
 
