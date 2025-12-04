@@ -30,6 +30,6 @@ export const serversRoutes = new Elysia({
 			500: t.Object({ error: t.Literal(ErrorCodes.InternalServerError) }),
 		},
 		detail: { description: "Handle Discord interaction" },
-		tags: ["Discord"],
+		tags: ["Servers"],
 	},
 );
