@@ -1,4 +1,5 @@
 import Elysia, { t } from "elysia";
+import { authPlugin, authReadWhitelistsPlugin } from "~/plugins/auth";
 import { ErrorCodes } from "~/types/errors";
 import { Pattern } from "~/utils/regex";
 import {
@@ -57,6 +58,8 @@ const userInputCreation = t.Union([
 export const whitelistsRoute = new Elysia({
 	prefix: "/whitelists",
 })
+	// Read-only whitelists authenticated routes (allows env.TOKEN and CampusCraft)
+	.use(authReadWhitelistsPlugin)
 	.get("", ({ query }) => listWhitelists(query), {
 		query: t.Object({
 			limit: t.Integer({ minimum: 1, maximum: 1000, default: 100 }),
@@ -71,6 +74,33 @@ export const whitelistsRoute = new Elysia({
 		detail: { description: "List users" },
 		tags: ["Whitelists"],
 	})
+	.get(
+		"/:id",
+		async ({ params, set }) => {
+			const { error, user } = await getWhitelist(params.id);
+			if (error) {
+				set.status = error.status;
+				return { error: error.code };
+			}
+
+			const { relations } = await getWhitelistRelations(user);
+			return { user, relations };
+		},
+		{
+			params: t.Object({ id: t.String() }),
+			response: {
+				200: t.Object({
+					user: whitelistObject,
+					relations: t.Array(whitelistObject),
+				}),
+				404: t.Object({ error: t.Literal(ErrorCodes.NotFound) }),
+			},
+			detail: { description: "Get user" },
+			tags: ["Whitelists"],
+		},
+	)
+	// Authenticated routes (using env.TOKEN)
+	.use(authPlugin)
 	.post(
 		"",
 		async ({ body, set }) => {
@@ -94,36 +124,9 @@ export const whitelistsRoute = new Elysia({
 						t.Literal(ErrorCodes.DiscordIdUsed),
 					]),
 				}),
-				500: t.Object({
-					error: t.Literal(ErrorCodes.InternalServerError),
-				}),
+				500: t.Object({ error: t.Literal(ErrorCodes.InternalServerError) }),
 			},
 			detail: { description: "Whitelist a player" },
-			tags: ["Whitelists"],
-		},
-	)
-	.get(
-		"/:id",
-		async ({ params, set }) => {
-			const { error, user } = await getWhitelist(params.id);
-			if (error) {
-				set.status = error.status;
-				return { error: error.code };
-			}
-
-			const { relations } = await getWhitelistRelations(user);
-			return { user, relations };
-		},
-		{
-			params: t.Object({ id: t.String() }),
-			response: {
-				200: t.Object({
-					user: whitelistObject,
-					relations: t.Array(whitelistObject),
-				}),
-				404: t.Object({ error: t.Literal(ErrorCodes.NotFound) }),
-			},
-			detail: { description: "Get user" },
 			tags: ["Whitelists"],
 		},
 	)
