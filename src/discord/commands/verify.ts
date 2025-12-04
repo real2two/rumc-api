@@ -14,16 +14,23 @@ import {
 	TextInput,
 	TextInputStyle,
 } from "@buape/carbon";
-import { redis } from "bun";
-import { eq } from "drizzle-orm";
 import { env } from "elysia";
-import { db } from "~/db";
-import { serverWhitelists } from "~/db/schema";
 import { grantDiscordVerifiedRole } from "~/discord/utils";
 import { createCode } from "~/utils/crypto";
 import { transporter } from "~/utils/mail";
 import { getMinecraftPlayer } from "~/utils/minecraft";
+import {
+	deleteVerificationCode,
+	getVerificationCode,
+	setVerificationCode,
+} from "~/utils/redis";
 import { Regex } from "~/utils/regex";
+import {
+	addWhitelist,
+	getWhitelist,
+	isWhitelisted,
+	updateWhitelist,
+} from "~/utils/whitelist";
 
 export interface VerificationCodeDiscord {
 	attempts: number;
@@ -41,11 +48,7 @@ export class VerifyModalCodeModal extends Modal {
 		if (!interaction.userId) return;
 
 		// Check if a user is already verified
-		const exists = await db.$count(
-			serverWhitelists,
-			eq(serverWhitelists.discord_id, interaction.userId),
-		);
-		if (exists) {
+		if (await isWhitelisted(interaction.userId)) {
 			return interaction.update({
 				content: "❌ You are already verified!",
 				components: [],
@@ -81,16 +84,20 @@ export class VerifyModalCodeModal extends Modal {
 			});
 		}
 
-		// Verify the user
+		// Delete verification code
 		await deleteVerificationCode(interaction.userId);
 
+		// Verify the user
 		try {
-			await db.insert(serverWhitelists).values({
+			const { error } = await addWhitelist({
 				email: verificationCode.email,
 				parent_id: null,
 				uuid: verificationCode.uuid,
 				discord_id: interaction.userId,
 			});
+			if (error) {
+				throw new Error(`Failed to add whitelisted player (${error.code})`);
+			}
 		} catch (err) {
 			console.error(err);
 			return interaction.update({
@@ -99,9 +106,6 @@ export class VerifyModalCodeModal extends Modal {
 				components: [],
 			});
 		}
-
-		// Grant user verified role
-		await grantDiscordVerifiedRole(interaction.userId);
 
 		// Respond to interaction
 		await interaction.update({
@@ -134,11 +138,7 @@ class VerifyModalCodeButton extends Button {
 		if (!interaction.userId) return;
 
 		// Check if a user is already verified
-		const exists = await db.$count(
-			serverWhitelists,
-			eq(serverWhitelists.discord_id, interaction.userId),
-		);
-		if (exists) {
+		if (await isWhitelisted(interaction.userId)) {
 			return interaction.update({
 				content: "❌ You are already verified!",
 				components: [],
@@ -163,11 +163,7 @@ export class VerifyModalInitialModal extends Modal {
 		if (!interaction.userId) return;
 
 		// Check if a user is already verified
-		const exists = await db.$count(
-			serverWhitelists,
-			eq(serverWhitelists.discord_id, interaction.userId),
-		);
-		if (exists) {
+		if (await isWhitelisted(interaction.userId)) {
 			return interaction.reply({
 				content: "❌ You are already verified!",
 				ephemeral: true,
@@ -233,25 +229,22 @@ export class VerifyModalMinecraftModal extends Modal {
 		if (!interaction.userId) return;
 
 		// Check if a user is already verified
-		const existsUser = await db.query.serverWhitelists.findFirst({
-			columns: { uuid: true },
-			where: eq(serverWhitelists.discord_id, interaction.userId),
-		});
-		if (!existsUser) {
+		const { user } = await getWhitelist(interaction.userId);
+		if (!user) {
 			return interaction.reply({
 				content:
 					"🛑 An unexpected error has occurred. Please try again from the beginning.",
 				ephemeral: true,
 			});
 		}
-		if (existsUser.uuid) {
+		if (user.uuid) {
 			return interaction.reply({
 				content: "❌ Your Minecraft account is already verified!",
 				ephemeral: true,
 			});
 		}
 
-		// Get Minecraft UUID
+		// Validate and get Minecraft UUID
 		const username = interaction.fields.getText("username");
 		if (!username || !Regex.MinecraftUsername.test(username)) {
 			return interaction.reply({
@@ -259,8 +252,6 @@ export class VerifyModalMinecraftModal extends Modal {
 				ephemeral: true,
 			});
 		}
-
-		// Get Minecraft UUID
 		const player = await getMinecraftPlayer(username);
 		if (!player) {
 			return interaction.reply({
@@ -271,7 +262,7 @@ export class VerifyModalMinecraftModal extends Modal {
 
 		// Update UUID
 		try {
-			await db.update(serverWhitelists).set({ uuid: player.id });
+			await updateWhitelist(user.id, { uuid: player.id });
 		} catch (err) {
 			console.error(err);
 			return interaction.reply({
@@ -279,15 +270,6 @@ export class VerifyModalMinecraftModal extends Modal {
 					"🛑 An unexpected error occurred when trying to link your Minecraft account. Please try again from the beginning.",
 				ephemeral: true,
 			});
-		}
-
-		// Grant user verified role if the user doesn't already have it
-		if (
-			!interaction.member?.roles.find(
-				(r) => r.id === env.DISCORD_VERIFIED_ROLE_ID,
-			)
-		) {
-			await grantDiscordVerifiedRole(interaction.userId);
 		}
 
 		// Respond to interaction
@@ -334,11 +316,8 @@ class VerifyModalInitialButton extends Button {
 		if (!interaction.userId) return;
 
 		// Check if a user is already verified
-		const existsUser = await db.query.serverWhitelists.findFirst({
-			columns: { uuid: true },
-			where: eq(serverWhitelists.discord_id, interaction.userId),
-		});
-		if (existsUser) {
+		const { user } = await getWhitelist(interaction.userId);
+		if (user) {
 			// Give role if the user doesn't have the role
 			if (
 				!interaction.member?.roles.find(
@@ -346,7 +325,7 @@ class VerifyModalInitialButton extends Button {
 				)
 			) {
 				await grantDiscordVerifiedRole(interaction.userId);
-				if (existsUser.uuid) {
+				if (user.uuid) {
 					return interaction.reply({
 						content: `✨ Since you previously been verified into this server, you've been verified!`,
 						ephemeral: true,
@@ -354,7 +333,7 @@ class VerifyModalInitialButton extends Button {
 				}
 			}
 
-			if (!existsUser.uuid) {
+			if (!user.uuid) {
 				// If Minecraft account isn't linked, ask to link
 				return interaction.showModal(new VerifyModalMinecraftModal());
 			}
@@ -386,26 +365,4 @@ export class CreateVerifyModalCommand extends Command {
 			components: [new Row([new VerifyModalInitialButton()])],
 		});
 	}
-}
-
-export async function getVerificationCode(userId: string) {
-	const value = await redis.get(`rumc:verify-discord:${userId}`);
-	if (!value) return null;
-	return JSON.parse(value) as VerificationCodeDiscord;
-}
-
-export function setVerificationCode(
-	userId: string,
-	value: VerificationCodeDiscord,
-) {
-	return redis.set(
-		`rumc:verify-discord:${userId}`,
-		JSON.stringify(value),
-		"EX",
-		900, // 15 minutes
-	);
-}
-
-export function deleteVerificationCode(userId: string) {
-	return redis.del(`rumc:verify-discord:${userId}`);
 }

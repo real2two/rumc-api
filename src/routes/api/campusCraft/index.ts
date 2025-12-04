@@ -1,9 +1,11 @@
-import { and, desc, eq, ne, or } from "drizzle-orm";
 import Elysia, { t } from "elysia";
-import { db } from "~/db";
-import { serverWhitelists } from "~/db/schema";
 import { campusCraftAuthPlugin } from "~/plugins/campusCraft";
-import { Regex } from "~/utils/regex";
+import { ErrorCodes } from "~/types/errors";
+import {
+	getWhitelist,
+	getWhitelistRelations,
+	listWhitelists,
+} from "~/utils/whitelist";
 
 const userObject = t.Object(
 	{
@@ -37,82 +39,39 @@ export const campusCraftRoutes = new Elysia({
 	prefix: "/campuscraft",
 })
 	.use(campusCraftAuthPlugin)
-	.get(
-		"/users",
-		async ({ query }) => {
-			const total = await db.$count(serverWhitelists);
-			const users = await db.query.serverWhitelists.findMany({
-				where: eq(serverWhitelists.banned, false),
-				orderBy: desc(serverWhitelists.created_at),
-				limit: query.limit,
-				offset: query.offset,
-			});
-
-			return { total, users };
-		},
-		{
-			query: t.Object({
-				limit: t.Integer({
-					description: "Limit how many users are returned",
-					minimum: 1,
-					maximum: 100,
-					default: 25,
-				}),
-				offset: t.Integer({
-					description: "Offset the users being returned",
-					minimum: 0,
-					default: 0,
-				}),
+	.get("/users", ({ query }) => listWhitelists(query), {
+		query: t.Object({
+			limit: t.Integer({
+				description: "Limit how many users are returned",
+				minimum: 1,
+				maximum: 100,
+				default: 25,
 			}),
-			response: {
-				200: t.Object({
-					total: t.Number({ description: "Total number of users" }),
-					users: t.Array(userObject, { description: "All users" }),
-				}),
-			},
-			detail: {
-				description: "Get users (for CampusCraft)",
-			},
-			tags: ["CampusCraft"],
+			offset: t.Integer({
+				description: "Offset the users being returned",
+				minimum: 0,
+				default: 0,
+			}),
+		}),
+		response: {
+			200: t.Object({
+				total: t.Number({ description: "Total number of users" }),
+				users: t.Array(userObject, { description: "All users" }),
+			}),
 		},
-	)
+		detail: { description: "List users (CampusCraft)" },
+		tags: ["CampusCraft"],
+	})
 	.get(
 		"/users/:id",
 		async ({ params, set }) => {
-			const isIdUuid = Regex.Uuid.test(params.id);
-			const user = await db.query.serverWhitelists.findFirst({
-				where: and(
-					eq(serverWhitelists.banned, false),
-					or(
-						...(isIdUuid ? [eq(serverWhitelists.id, params.id)] : []),
-						eq(serverWhitelists.email, params.id),
-						...(isIdUuid ? [eq(serverWhitelists.uuid, params.id)] : []),
-						eq(serverWhitelists.discord_id, params.id),
-					),
-				),
-			});
-
-			if (!user) {
-				set.status = 404;
-				return { error: "not_found" };
+			const { error, user } = await getWhitelist(params.id);
+			if (error) {
+				set.status = error.status;
+				return { error: error.code };
 			}
 
-			const relations = await db.query.serverWhitelists.findMany({
-				where: and(
-					eq(serverWhitelists.banned, false),
-					user.parent_id
-						? and(
-								ne(serverWhitelists.id, user.id),
-								or(
-									eq(serverWhitelists.id, user.parent_id),
-									eq(serverWhitelists.parent_id, user.parent_id),
-								),
-							)
-						: eq(serverWhitelists.parent_id, user.id),
-				),
-				orderBy: desc(serverWhitelists.created_at),
-			});
-
+			const { relations } = await getWhitelistRelations(user);
 			return { user, relations };
 		},
 		{
@@ -126,9 +85,9 @@ export const campusCraftRoutes = new Elysia({
 					user: userObject,
 					relations: t.Array(userObject, { description: "List of relations" }),
 				}),
-				404: t.Object({ error: t.Literal("not_found") }),
+				404: t.Object({ error: t.Literal(ErrorCodes.NotFound) }),
 			},
-			detail: { description: "Get a whitelisted player" },
+			detail: { description: "Get user (CampusCraft)" },
 			tags: ["CampusCraft"],
 		},
 	);

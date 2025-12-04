@@ -6,14 +6,13 @@ import {
 	CommandWithSubcommands,
 	InteractionContextType,
 } from "@buape/carbon";
-import { and, eq, isNull } from "drizzle-orm";
-import { db } from "~/db";
-import { serverWhitelists } from "~/db/schema";
-import {
-	grantDiscordVerifiedRole,
-	// revokeDiscordVerifiedRole,
-} from "~/discord/utils";
+import { ErrorCodes } from "~/types/errors";
 import { getMinecraftPlayer } from "~/utils/minecraft";
+import {
+	addWhitelist,
+	getWhitelist,
+	getWhitelistRelations,
+} from "~/utils/whitelist";
 
 export class GuestListCommand extends Command {
 	name = "list";
@@ -23,14 +22,8 @@ export class GuestListCommand extends Command {
 		if (!interaction.userId) return;
 
 		// Get user
-		const whitelisted = await db.query.serverWhitelists.findFirst({
-			columns: { id: true },
-			where: and(
-				eq(serverWhitelists.discord_id, interaction.userId),
-				isNull(serverWhitelists.parent_id),
-			),
-		});
-		if (!whitelisted) {
+		const { user } = await getWhitelist(interaction.userId);
+		if (!user || user.parent_id) {
 			return interaction.reply({
 				content: "❌ You cannot run this command.",
 				ephemeral: true,
@@ -38,32 +31,29 @@ export class GuestListCommand extends Command {
 		}
 
 		// Get guests
-		const guests = await db.query.serverWhitelists.findMany({
-			columns: { id: true, uuid: true, discord_id: true },
-			where: eq(serverWhitelists.parent_id, whitelisted.id),
-		});
-		if (!guests.length) {
+		const { relations } = await getWhitelistRelations(user);
+		if (!relations.length) {
 			return interaction.reply({
 				content: "### Invited guests\nYou haven't invited any guests. 🥀",
 			});
 		}
 
 		// Parse guests
-		const guestsText: string[] = [];
-		for (const guest of guests) {
-			const usernameOrUuid = guest.uuid
-				? (await getMinecraftPlayer(guest.uuid))?.username || guest.uuid
+		const bodyText: string[] = [];
+		for (const relation of relations) {
+			const usernameOrUuid = relation.uuid
+				? (await getMinecraftPlayer(relation.uuid))?.username || relation.uuid
 				: null;
-			guestsText.push(
-				guest.discord_id
-					? `- <@${guest.discord_id}>${usernameOrUuid ? ` / \`${usernameOrUuid}\`` : ""}`
+			bodyText.push(
+				relation.discord_id
+					? `- <@${relation.discord_id}>${usernameOrUuid ? ` / \`${usernameOrUuid}\`` : ""}`
 					: `- ${usernameOrUuid ? `\`${usernameOrUuid}\`` : "Unknown user"}`,
 			);
 		}
 
 		// Respond to interaction
 		await interaction.reply({
-			content: `### Invited guests\n${guestsText.join("\n")}`,
+			content: `### Invited guests\n${bodyText.join("\n")}`,
 			allowedMentions: {},
 		});
 	}
@@ -96,33 +86,15 @@ export class GuestAddCommand extends Command {
 		if (!guestUser || !guestMinecraft) return;
 
 		// Get user
-		const whitelisted = await db.query.serverWhitelists.findFirst({
-			columns: { id: true },
-			where: and(
-				eq(serverWhitelists.discord_id, interaction.userId),
-				isNull(serverWhitelists.parent_id),
-			),
-		});
-		if (!whitelisted) {
+		const { user } = await getWhitelist(interaction.userId);
+		if (!user || user.parent_id) {
 			return interaction.reply({
 				content: "❌ You cannot run this command.",
 				ephemeral: true,
 			});
 		}
 
-		// Set maximum guests to 10
-		const count = await db.$count(
-			serverWhitelists,
-			eq(serverWhitelists.parent_id, whitelisted.id),
-		);
-		if (count >= 10) {
-			return interaction.reply({
-				content: "❌ You've reached the maximum guests limit (10).",
-				ephemeral: true,
-			});
-		}
-
-		// If user is bot
+		// Cannot be bot
 		if (guestUser.bot) {
 			return interaction.reply({
 				content: "❌ Cannot invite a bot as a guest.",
@@ -130,22 +102,10 @@ export class GuestAddCommand extends Command {
 			});
 		}
 
-		// If guest is in the server
+		// Guest must be in the server
 		if (!interaction.options.resolved.members?.[guestUser.id]) {
 			return interaction.reply({
 				content: "❌ This member is not in the server.",
-				ephemeral: true,
-			});
-		}
-
-		// Check if Discord user ID is already used
-		const existsGuestDiscord = await db.$count(
-			serverWhitelists,
-			eq(serverWhitelists.discord_id, guestUser.id),
-		);
-		if (existsGuestDiscord) {
-			return interaction.reply({
-				content: "❌ The provided Discord member is already verified.",
 				ephemeral: true,
 			});
 		}
@@ -160,37 +120,39 @@ export class GuestAddCommand extends Command {
 			});
 		}
 
-		// Check if Minecraft UUID is already used
-		const existsGuestMinecraft = await db.$count(
-			serverWhitelists,
-			eq(serverWhitelists.uuid, player.id),
-		);
-		if (existsGuestMinecraft) {
-			return interaction.reply({
-				content: "❌ The provided Minecraft username is already used.",
-				ephemeral: true,
-			});
+		// Whitelist guest
+		const { error } = await addWhitelist({
+			email: null,
+			parent_id: user.id,
+			uuid: player.id,
+			discord_id: guestUser.id,
+		});
+		if (error) {
+			switch (error.code) {
+				case ErrorCodes.ParentReachedGuestLimit:
+					return interaction.reply({
+						content: "❌ You've reached the maximum guests limit (10).",
+						ephemeral: true,
+					});
+				case ErrorCodes.DiscordIdUsed:
+					return interaction.reply({
+						content: "❌ The provided Discord member is already verified.",
+						ephemeral: true,
+					});
+				case ErrorCodes.MinecraftUuidUsed:
+					return interaction.reply({
+						content: "❌ The provided Minecraft username is already used.",
+						ephemeral: true,
+					});
+				case ErrorCodes.InternalServerError:
+					return interaction.reply({
+						content:
+							"🛑 An unexpected error occurred when trying to add the guest. Please try again.",
+						ephemeral: true,
+					});
+			}
+			return;
 		}
-
-		// Add user to database
-		try {
-			await db.insert(serverWhitelists).values({
-				email: null,
-				parent_id: whitelisted.id,
-				uuid: player.id,
-				discord_id: guestUser.id,
-			});
-		} catch (err) {
-			console.error(err);
-			return interaction.reply({
-				content:
-					"🛑 An unexpected error occurred when trying to add the guest. Please try again.",
-				ephemeral: true,
-			});
-		}
-
-		// Grant guest verified role
-		await grantDiscordVerifiedRole(guestUser.id);
 
 		// Respond to interaction
 		await interaction.reply({
@@ -200,80 +162,11 @@ export class GuestAddCommand extends Command {
 	}
 }
 
-// export class GuestRemoveCommand extends Command {
-// 	name = "remove";
-// 	override description = "Remove a guest from the server";
-// 	override options = [
-// 		{
-// 			name: "user",
-// 			type: ApplicationCommandOptionType.User as const,
-// 			description: "The user to remove",
-// 			required: true,
-// 		},
-// 	];
-
-// 	async run(interaction: CommandInteraction) {
-// 		if (!interaction.userId) return;
-
-// 		// Options
-// 		const guestUser = interaction.options.getUser("user");
-// 		if (!guestUser) return;
-
-// 		// Get user
-// 		const whitelisted = await db.query.serverWhitelists.findFirst({
-// 			columns: { id: true },
-// 			where: and(
-// 				eq(serverWhitelists.discord_id, interaction.userId),
-// 				isNull(serverWhitelists.parent_id),
-// 			),
-// 		});
-// 		if (!whitelisted) {
-// 			return interaction.reply({
-// 				content: "❌ You cannot run this command.",
-// 				ephemeral: true,
-// 			});
-// 		}
-
-// 		// Get guest to remove
-// 		const whitelistedGuest = await db.query.serverWhitelists.findFirst({
-// 			where: and(
-// 				eq(serverWhitelists.discord_id, guestUser.id),
-// 				eq(serverWhitelists.parent_id, whitelisted.id),
-// 			),
-// 		});
-// 		if (!whitelistedGuest) {
-// 			return interaction.reply({
-// 				content: "❌ Cannot find guest.",
-// 				ephemeral: true,
-// 			});
-// 		}
-
-// 		// Remove role from guest
-// 		if (whitelistedGuest.discord_id) {
-// 			await revokeDiscordVerifiedRole(whitelistedGuest.discord_id);
-// 		}
-
-// 		// Remove guest
-// 		await db
-// 			.delete(serverWhitelists)
-// 			.where(eq(serverWhitelists.id, whitelistedGuest.id));
-
-// 		await interaction.reply({
-// 			content: `🗑️ Removed <@${guestUser.id}> as a guest!`,
-// 			allowedMentions: {},
-// 		});
-// 	}
-// }
-
 export class GuestCommand extends CommandWithSubcommands {
 	name = "guest";
 	override description = "Manage guests";
 	override integrationTypes = [ApplicationIntegrationType.GuildInstall];
 	override contexts = [InteractionContextType.Guild];
 
-	subcommands = [
-		new GuestListCommand(),
-		new GuestAddCommand(),
-		// new GuestRemoveCommand(),
-	];
+	subcommands = [new GuestListCommand(), new GuestAddCommand()];
 }

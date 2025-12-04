@@ -6,10 +6,8 @@ import {
 	CommandWithSubcommands,
 	InteractionContextType,
 } from "@buape/carbon";
-import { eq } from "drizzle-orm";
-import { db } from "~/db";
-import { serverWhitelists } from "~/db/schema";
 import { getMinecraftPlayer } from "~/utils/minecraft";
+import { getWhitelist } from "~/utils/whitelist";
 
 class WhoIsDiscordCommand extends Command {
 	name = "discord";
@@ -27,10 +25,7 @@ class WhoIsDiscordCommand extends Command {
 		const user = interaction.options.getUser("user");
 		if (!user) return;
 
-		const whitelisted = await db.query.serverWhitelists.findFirst({
-			columns: { uuid: true, parent_id: true },
-			where: eq(serverWhitelists.discord_id, user.id),
-		});
+		const { user: whitelisted } = await getWhitelist(user.id);
 		if (!whitelisted) {
 			return interaction.reply({
 				content: "❌ Cannot find user with provided Discord account.",
@@ -59,10 +54,7 @@ class WhoIsDiscordCommand extends Command {
 		if (whitelisted.parent_id) {
 			footerText = "Invited by an unknown user.";
 
-			const parent = await db.query.serverWhitelists.findFirst({
-				columns: { uuid: true, discord_id: true },
-				where: eq(serverWhitelists.id, whitelisted.parent_id),
-			});
+			const { user: parent } = await getWhitelist(whitelisted.parent_id);
 			if (parent) {
 				const parentPlayer = parent.uuid
 					? await getMinecraftPlayer(parent.uuid)
@@ -105,10 +97,7 @@ class WhoIsMinecraftCommand extends Command {
 			});
 		}
 
-		const whitelisted = await db.query.serverWhitelists.findFirst({
-			columns: { discord_id: true, parent_id: true },
-			where: eq(serverWhitelists.uuid, player.id),
-		});
+		const { user: whitelisted } = await getWhitelist(player.id);
 		if (!whitelisted) {
 			return interaction.reply({
 				content: "❌ Cannot find user with provided Minecraft username.",
@@ -124,10 +113,7 @@ class WhoIsMinecraftCommand extends Command {
 		if (whitelisted.parent_id) {
 			footerText = "Invited by an unknown user.";
 
-			const parent = await db.query.serverWhitelists.findFirst({
-				columns: { uuid: true, discord_id: true },
-				where: eq(serverWhitelists.id, whitelisted.parent_id),
-			});
+			const { user: parent } = await getWhitelist(whitelisted.parent_id);
 			if (parent) {
 				const parentPlayer = parent.uuid
 					? await getMinecraftPlayer(parent.uuid)
