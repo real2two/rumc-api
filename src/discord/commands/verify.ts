@@ -103,7 +103,7 @@ export class VerifyModalCodeModal extends Modal {
 		if (!verificationCode.uuid) {
 			return interaction.update({
 				content:
-					"✅ You have been verified! Since you didn't provide a Minecraft username, you'll need to click \"Verify\" again to enter a Minecraft Java edition account to be whitelisted into the server.",
+					"✅ You have been verified!\n-# **Warning**: Since you didn't provide a Minecraft username, you'll need to click \"Verify\" again and enter a Minecraft Java edition account to be whitelisted into the server.",
 				components: [],
 			});
 		}
