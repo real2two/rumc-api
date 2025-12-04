@@ -27,7 +27,9 @@ export const authPlugin = new Elysia({ name: "auth" })
 	})
 	.as("scoped");
 
-export const authReadWhitelistsPlugin = new Elysia({ name: "auth-read-whitelists" })
+export const authReadWhitelistsPlugin = new Elysia({
+	name: "auth-read-whitelists",
+})
 	.guard({
 		as: "local",
 		response: { 401: t.Literal("Unauthorized") },

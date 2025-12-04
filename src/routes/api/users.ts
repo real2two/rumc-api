@@ -55,8 +55,8 @@ const userInputCreation = t.Union([
 	}),
 ]);
 
-export const whitelistsRoute = new Elysia({
-	prefix: "/whitelists",
+export const usersRoute = new Elysia({
+	prefix: "/users",
 })
 	// Read-only whitelists authenticated routes (allows env.TOKEN and CampusCraft)
 	.use(authReadWhitelistsPlugin)

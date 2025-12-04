@@ -1,8 +1,8 @@
 import Elysia from "elysia";
 
 import { discordRoutes } from "./discord";
-import { whitelistsRoute } from "./whitelists";
+import { usersRoute } from "./users";
 
 export const apiRoute = new Elysia({ prefix: "/api" })
 	.use(discordRoutes)
-	.use(whitelistsRoute);
+	.use(usersRoute);
