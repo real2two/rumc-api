@@ -20,9 +20,9 @@ import { createCode } from "~/utils/crypto";
 import { transporter } from "~/utils/mail";
 import { getMinecraftPlayer } from "~/utils/minecraft";
 import {
-	deleteVerificationCode,
-	getVerificationCode,
-	setVerificationCode,
+	deleteVerificationCodeDiscord,
+	getVerificationCodeDiscord,
+	setVerificationCodeDiscord,
 } from "~/utils/redis";
 import { Regex } from "~/utils/regex";
 import {
@@ -49,7 +49,9 @@ export class VerifyModalCodeModal extends Modal {
 		}
 
 		// Get verification code
-		const verificationCode = await getVerificationCode(interaction.userId);
+		const verificationCode = await getVerificationCodeDiscord(
+			interaction.userId,
+		);
 		if (!verificationCode) {
 			return interaction.update({
 				content:
@@ -62,14 +64,14 @@ export class VerifyModalCodeModal extends Modal {
 		const code = interaction.fields.getText("code");
 		if (verificationCode.code !== code) {
 			if (++verificationCode.attempts >= 3) {
-				await deleteVerificationCode(interaction.userId);
+				await deleteVerificationCodeDiscord(interaction.userId);
 				return interaction.update({
 					content:
 						"🗑️ Incorrect code! You have failed entering the code too many times.",
 					components: [],
 				});
 			}
-			await setVerificationCode(interaction.userId, verificationCode);
+			await setVerificationCodeDiscord(interaction.userId, verificationCode);
 
 			return interaction.update({
 				content: "❌ Incorrect code! Please try again.",
@@ -77,7 +79,7 @@ export class VerifyModalCodeModal extends Modal {
 		}
 
 		// Delete verification code
-		await deleteVerificationCode(interaction.userId);
+		await deleteVerificationCodeDiscord(interaction.userId);
 
 		// Verify the user
 		try {
@@ -204,7 +206,7 @@ export class VerifyModalInitialModal extends Modal {
 
 		// Save verification code
 		const code = createCode(32);
-		await setVerificationCode(interaction.userId, {
+		await setVerificationCodeDiscord(interaction.userId, {
 			attempts: 0,
 			code,
 			email,

@@ -1,5 +1,6 @@
 import Elysia, { env, t } from "elysia";
 import { ErrorCodes } from "~/types/errors";
+import { getServerCache, setServerCache } from "~/utils/redis";
 
 export const serversRoutes = new Elysia({
 	prefix: "/servers",
@@ -7,16 +8,29 @@ export const serversRoutes = new Elysia({
 	"/survival",
 	async ({ set }) => {
 		try {
+			// Get cached server
+			const cachedServer = await getServerCache("survival");
+			if (cachedServer) return cachedServer;
+
+			// If not cached, fetch server
 			const res = await fetch(`https://api.mcsrvstat.us/3/${env.MINECRAFT_IP}`);
 			if (!res.ok) throw new Error("Failed to fetch server");
 
+			// Get response
 			const data = (await res.json()) as {
 				online: boolean;
-				players?: { online: number };
+				players?: { online?: number };
 			};
 
-			if (!data.online) return { online: false, players: 0 };
-			return { online: true, players: data.players?.online || 0 };
+			// Cache server data
+			const server = {
+				online: data.online,
+				players: data.players?.online || 0,
+			};
+			await setServerCache("survival", server);
+
+			// Send response
+			return server;
 		} catch (err) {
 			console.error("Error fetching player count:", err);
 
