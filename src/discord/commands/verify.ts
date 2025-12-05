@@ -144,7 +144,6 @@ class VerifyModalCodeButton extends Button {
 			return interaction.update({
 				content: "❌ You are already verified!",
 				components: [],
-				ephemeral: true,
 			});
 		}
 

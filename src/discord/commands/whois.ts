@@ -44,7 +44,7 @@ class WhoIsDiscordCommand extends Command {
 		if (!player) {
 			return interaction.reply({
 				content: `🛑 Failed to find player with the Minecraft UUID \`${whitelisted.uuid}\`.`,
-				allowedMentions: {},
+				ephemeral: true,
 			});
 		}
 
@@ -67,7 +67,7 @@ class WhoIsDiscordCommand extends Command {
 
 		return interaction.reply({
 			content: `ℹ️ ${infoText}.\n-# > ${footerText}`,
-			allowedMentions: {},
+			ephemeral: true,
 		});
 	}
 }
@@ -126,7 +126,7 @@ class WhoIsMinecraftCommand extends Command {
 
 		return interaction.reply({
 			content: `ℹ️ ${infoText}\n-# > ${footerText}`,
-			allowedMentions: {},
+			ephemeral: true,
 		});
 	}
 }

@@ -35,6 +35,7 @@ export class GuestListCommand extends Command {
 		if (!relations.length) {
 			return interaction.reply({
 				content: "### Invited guests\nYou haven't invited any guests. 🥀",
+				ephemeral: true,
 			});
 		}
 
@@ -54,7 +55,7 @@ export class GuestListCommand extends Command {
 		// Respond to interaction
 		await interaction.reply({
 			content: `### Invited guests\n${bodyText.join("\n")}`,
-			allowedMentions: {},
+			ephemeral: true,
 		});
 	}
 }
@@ -157,7 +158,7 @@ export class GuestAddCommand extends Command {
 		// Respond to interaction
 		await interaction.reply({
 			content: `✅ Verified <@${guestUser.id}> as \`${player.username}\`!`,
-			allowedMentions: {},
+			ephemeral: true,
 		});
 	}
 }
