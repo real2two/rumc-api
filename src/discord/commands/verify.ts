@@ -222,6 +222,8 @@ export class VerifyModalInitialModal extends Modal {
 			});
 		} catch (err) {
 			console.error("Failed to send email:", err);
+
+			await deleteVerificationCodeDiscord(interaction.userId);
 			return interaction.reply({
 				content:
 					"🛑 An unexpected error has occurred when sending an email (report this ASAP!)",
