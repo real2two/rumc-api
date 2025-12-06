@@ -50,8 +50,8 @@ class WhoIsDiscordCommand extends Command {
 
 		const infoText = `<@${user.id}> is \`${player.username}\``;
 		const footerText = whitelisted.parent_id
-			? "Verified as a Rutgers student 🎉"
-			: "Invited by a Rutgers student 👽";
+			? "Invited by a Rutgers student 👽"
+			: "Verified as a Rutgers student 🎉";
 
 		return interaction.reply({
 			content: `ℹ️ ${infoText}.\n-# > ${footerText}`,
@@ -97,8 +97,8 @@ class WhoIsMinecraftCommand extends Command {
 			? `<@${whitelisted.discord_id}> is \`${player.username}\`.`
 			: `\`${player.username}\` doesn't have a linked Discord account.`;
 		const footerText = whitelisted.parent_id
-			? "Verified as a Rutgers student 🎉"
-			: "Invited by a Rutgers student 👽";
+			? "Invited by a Rutgers student 👽"
+			: "Verified as a Rutgers student 🎉";
 
 		return interaction.reply({
 			content: `ℹ️ ${infoText}\n-# > ${footerText}`,
