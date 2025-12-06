@@ -49,21 +49,9 @@ class WhoIsDiscordCommand extends Command {
 		}
 
 		const infoText = `<@${user.id}> is \`${player.username}\``;
-
-		let footerText = "Verified as a Rutgers student 🎉";
-		if (whitelisted.parent_id) {
-			footerText = "Invited by an unknown user.";
-
-			const { user: parent } = await getWhitelist(whitelisted.parent_id);
-			if (parent) {
-				const parentPlayer = parent.uuid
-					? await getMinecraftPlayer(parent.uuid)
-					: null;
-				footerText = parent.discord_id
-					? `Invited by <@${parent.discord_id}>${parent.uuid ? ` / \`${parentPlayer?.username || parent.uuid}\`` : ""} 👽`
-					: `Invited by \`${parentPlayer?.username}\` 👽`;
-			}
-		}
+		const footerText = whitelisted.parent_id
+			? "Verified as a Rutgers student 🎉"
+			: "Invited by a Rutgers student 👽";
 
 		return interaction.reply({
 			content: `ℹ️ ${infoText}.\n-# > ${footerText}`,
@@ -108,21 +96,9 @@ class WhoIsMinecraftCommand extends Command {
 		const infoText = whitelisted.discord_id
 			? `<@${whitelisted.discord_id}> is \`${player.username}\`.`
 			: `\`${player.username}\` doesn't have a linked Discord account.`;
-
-		let footerText = "Verified as a Rutgers student 🎉";
-		if (whitelisted.parent_id) {
-			footerText = "Invited by an unknown user.";
-
-			const { user: parent } = await getWhitelist(whitelisted.parent_id);
-			if (parent) {
-				const parentPlayer = parent.uuid
-					? await getMinecraftPlayer(parent.uuid)
-					: null;
-				footerText = parent.discord_id
-					? `Invited by <@${parent.discord_id}>${parent.uuid ? ` / \`${parentPlayer?.username || parent.uuid}\`` : ""} 👽`
-					: `Invited by \`${parentPlayer?.username}\` 👽`;
-			}
-		}
+		const footerText = whitelisted.parent_id
+			? "Verified as a Rutgers student 🎉"
+			: "Invited by a Rutgers student 👽";
 
 		return interaction.reply({
 			content: `ℹ️ ${infoText}\n-# > ${footerText}`,
