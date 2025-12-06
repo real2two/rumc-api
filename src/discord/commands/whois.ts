@@ -55,6 +55,7 @@ class WhoIsDiscordCommand extends Command {
 
 		return interaction.reply({
 			content: `ℹ️ ${infoText}.\n-# > ${footerText}`,
+			allowedMentions: {},
 			ephemeral: true,
 		});
 	}
@@ -102,6 +103,7 @@ class WhoIsMinecraftCommand extends Command {
 
 		return interaction.reply({
 			content: `ℹ️ ${infoText}\n-# > ${footerText}`,
+			allowedMentions: {},
 			ephemeral: true,
 		});
 	}
