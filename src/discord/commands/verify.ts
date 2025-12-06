@@ -213,12 +213,21 @@ export class VerifyModalInitialModal extends Modal {
 		});
 
 		// Send email for verification
-		await transporter.sendMail({
-			from: `"RUMC Verification" <${env.SMTP_USER}>`,
-			to: email,
-			subject: "Verification code for RUMC",
-			text: `The verification code is: ${code}`,
-		});
+		try {
+			await transporter.sendMail({
+				from: `"RUMC Verification" <${env.SMTP_USER}>`,
+				to: email,
+				subject: "Verification code for RUMC",
+				text: `The verification code is: ${code}`,
+			});
+		} catch (err) {
+			console.error("Failed to send email:", err);
+			return interaction.reply({
+				content:
+					"🛑 An unexpected error has occurred when sending an email (report this ASAP!)",
+				ephemeral: true,
+			});
+		}
 
 		return interaction.reply({
 			content: `📨 Check your email (\`${email}\`) and enter the verification code:`,
