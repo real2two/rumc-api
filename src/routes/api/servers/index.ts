@@ -8,6 +8,7 @@ const SERVER_ADDRESSES = {
 
 export const serversRoutes = new Elysia({
 	prefix: "/servers",
+	tags: ["Servers"],
 }).get(
 	"/:id",
 	async ({ params, set }) => {
@@ -46,12 +47,11 @@ export const serversRoutes = new Elysia({
 		}
 	},
 	{
+		detail: { description: "Get status of a server" },
 		params: t.Object({ id: t.Literal("survival") }),
 		response: {
 			200: t.Object({ online: t.Boolean(), players: t.Number() }),
 			500: t.Object({ error: t.Literal(ErrorCodes.InternalServerError) }),
 		},
-		detail: { description: "Get status of a server" },
-		tags: ["Servers"],
 	},
 );

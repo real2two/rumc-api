@@ -1,7 +1,6 @@
 import Elysia, { t } from "elysia";
 import { authPlugin, authReadWhitelistsPlugin } from "~/plugins/auth";
 import { ErrorCodes } from "~/types/errors";
-import { Pattern } from "~/utils/regex";
 import {
 	addWhitelist,
 	deleteWhitelist,
@@ -10,57 +9,16 @@ import {
 	listWhitelists,
 	updateWhitelist,
 } from "~/utils/whitelist";
-
-const whitelistObject = t.Object({
-	id: t.String(),
-
-	email: t.Union([t.String(), t.Null()]),
-	parent_id: t.Union([t.String(), t.Null()]),
-
-	uuid: t.Union([t.String(), t.Null()]),
-	discord_id: t.Union([t.String(), t.Null()]),
-
-	banned: t.Boolean(),
-
-	created_at: t.Date(),
-});
-
-const userInputUpdate = t.Partial(
-	t.Object({
-		uuid: t.Union([t.String({ format: "uuid" }), t.Null()]),
-		discord_id: t.Union([t.String({ pattern: Pattern.Snowflake }), t.Null()]),
-
-		banned: t.Boolean(),
-	}),
-);
-
-const userInputCreation = t.Union([
-	t.Object({
-		email: t.String({ format: "email" }),
-		parent_id: t.Null(),
-
-		uuid: t.Union([t.String({ format: "uuid" }), t.Null()]),
-		discord_id: t.Union([t.String({ pattern: Pattern.Snowflake }), t.Null()]),
-
-		banned: t.Boolean(),
-	}),
-	t.Object({
-		email: t.Union([t.String({ format: "email" }), t.Null()]),
-		parent_id: t.String({ format: "uuid" }),
-
-		uuid: t.Union([t.String({ format: "uuid" }), t.Null()]),
-		discord_id: t.Union([t.String({ pattern: Pattern.Snowflake }), t.Null()]),
-
-		banned: t.Boolean(),
-	}),
-]);
+import { whitelistModel } from "./models";
 
 export const usersRoute = new Elysia({
 	prefix: "/users",
+	tags: ["Whitelists"],
 })
 	// Read-only whitelists authenticated routes (allows env.TOKEN and CampusCraft)
 	.use(authReadWhitelistsPlugin)
 	.get("", ({ query }) => listWhitelists(query), {
+		detail: { description: "List users" },
 		query: t.Object({
 			limit: t.Integer({ minimum: 1, maximum: 1000, default: 100 }),
 			offset: t.Integer({ minimum: 0, default: 0 }),
@@ -68,11 +26,9 @@ export const usersRoute = new Elysia({
 		response: {
 			200: t.Object({
 				total: t.Number(),
-				users: t.Array(whitelistObject),
+				users: t.Array(whitelistModel.get),
 			}),
 		},
-		detail: { description: "List users" },
-		tags: ["Whitelists"],
 	})
 	.get(
 		"/:id",
@@ -87,16 +43,15 @@ export const usersRoute = new Elysia({
 			return { user, relations };
 		},
 		{
+			detail: { description: "Get user" },
 			params: t.Object({ id: t.String() }),
 			response: {
 				200: t.Object({
-					user: whitelistObject,
-					relations: t.Array(whitelistObject),
+					user: whitelistModel.get,
+					relations: t.Array(whitelistModel.get),
 				}),
 				404: t.Object({ error: t.Literal(ErrorCodes.NotFound) }),
 			},
-			detail: { description: "Get user" },
-			tags: ["Whitelists"],
 		},
 	)
 	// Authenticated routes (using env.TOKEN)
@@ -112,7 +67,8 @@ export const usersRoute = new Elysia({
 			return user;
 		},
 		{
-			body: userInputCreation,
+			detail: { description: "Whitelist a player" },
+			body: whitelistModel.create,
 			response: {
 				200: t.Object({ id: t.String(), created_at: t.Date() }),
 				409: t.Object({
@@ -126,8 +82,6 @@ export const usersRoute = new Elysia({
 				}),
 				500: t.Object({ error: t.Literal(ErrorCodes.InternalServerError) }),
 			},
-			detail: { description: "Whitelist a player" },
-			tags: ["Whitelists"],
 		},
 	)
 	.patch(
@@ -142,17 +96,16 @@ export const usersRoute = new Elysia({
 			return "No Content";
 		},
 		{
-			params: t.Object({ id: t.String() }),
-			body: userInputUpdate,
-			response: {
-				204: t.Literal("No Content"),
-				404: t.Object({ error: t.Literal(ErrorCodes.NotFound) }),
-			},
 			detail: {
 				description:
 					"Update user (keep in mind: if the player is banned, they won't be kicked off the server)",
 			},
-			tags: ["Whitelists"],
+			params: t.Object({ id: t.String() }),
+			body: whitelistModel.update,
+			response: {
+				204: t.Literal("No Content"),
+				404: t.Object({ error: t.Literal(ErrorCodes.NotFound) }),
+			},
 		},
 	)
 	.delete(
@@ -167,15 +120,14 @@ export const usersRoute = new Elysia({
 			return "No Content";
 		},
 		{
+			detail: {
+				description:
+					"Delete user (keep in mind: if the player is in the server, they won't be kicked off)",
+			},
 			params: t.Object({ id: t.String() }),
 			response: {
 				204: t.Literal("No Content"),
 				404: t.Object({ error: t.Literal(ErrorCodes.NotFound) }),
 			},
-			detail: {
-				description:
-					"Delete user (keep in mind: if the player is in the server, they won't be kicked off)",
-			},
-			tags: ["Whitelists"],
 		},
 	);
