@@ -47,7 +47,10 @@ export const serversRoutes = new Elysia({
 		}
 	},
 	{
-		detail: { description: "Get status of a server" },
+		detail: {
+			summary: "Get server status",
+			description: "Get online status and player count",
+		},
 		params: t.Object({ id: t.Literal("survival") }),
 		response: {
 			200: t.Object({ online: t.Boolean(), players: t.Number() }),

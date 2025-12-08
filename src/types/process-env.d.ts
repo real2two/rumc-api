@@ -20,7 +20,6 @@ declare global {
 			SMTP_PASS: string;
 
 			BASE_URL: string;
-			DEPLOY_SECRET: string;
 			DISCORD_CLIENT_ID: string;
 			DISCORD_PUBLIC_KEY: string;
 			DISCORD_TOKEN: string;

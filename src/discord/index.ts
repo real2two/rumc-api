@@ -1,6 +1,6 @@
 import { Client } from "@buape/carbon";
+import { createHandler } from "@buape/carbon/adapters/fetch";
 import { env } from "elysia";
-
 import { GuestCommand } from "./commands/guests";
 import { CreateVerifyModalCommand } from "./commands/verify";
 import { WhoIsCommand } from "./commands/whois";
@@ -11,7 +11,7 @@ export const client = new Client(
 		clientId: env.DISCORD_CLIENT_ID,
 		publicKey: env.DISCORD_PUBLIC_KEY,
 		token: env.DISCORD_TOKEN,
-		disableDeployRoute: true,
+		deploySecret: env.TOKEN,
 	},
 	{
 		commands: [
@@ -21,3 +21,5 @@ export const client = new Client(
 		],
 	},
 );
+
+export const handler = createHandler(client);

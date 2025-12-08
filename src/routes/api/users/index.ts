@@ -18,7 +18,7 @@ export const usersRoute = new Elysia({
 	// Read-only whitelists authenticated routes (allows env.TOKEN and CampusCraft)
 	.use(authReadWhitelistsPlugin)
 	.get("", ({ query }) => listWhitelists(query), {
-		detail: { description: "List users" },
+		detail: { summary: "List users" },
 		query: t.Object({
 			limit: t.Integer({ minimum: 1, maximum: 1000, default: 100 }),
 			offset: t.Integer({ minimum: 0, default: 0 }),
@@ -43,7 +43,7 @@ export const usersRoute = new Elysia({
 			return { user, relations };
 		},
 		{
-			detail: { description: "Get user" },
+			detail: { summary: "Get user" },
 			params: t.Object({ id: t.String() }),
 			response: {
 				200: t.Object({
@@ -67,7 +67,7 @@ export const usersRoute = new Elysia({
 			return user;
 		},
 		{
-			detail: { description: "Whitelist a player" },
+			detail: { summary: "Create user", description: "Whitelist a player" },
 			body: WhitelistModel.create,
 			response: {
 				200: t.Object({ id: t.String(), created_at: t.Date() }),
@@ -97,8 +97,10 @@ export const usersRoute = new Elysia({
 		},
 		{
 			detail: {
+				summary: "Update user",
 				description:
-					"Update user (keep in mind: if the player is banned, they won't be kicked off the server)",
+					"- Banned players won't be banned off the Discord server (intended behavior, so they can make tickets and still talk on Discord)\n" +
+					"- Banning a player will revoke their access from being able to join the Minecraft server, but won't be kicked off the server if they're already on the server (so make sure to use Minecraft commands to ban as well)",
 			},
 			params: t.Object({ id: t.String() }),
 			body: WhitelistModel.update,
@@ -121,8 +123,10 @@ export const usersRoute = new Elysia({
 		},
 		{
 			detail: {
+				summary: "Delete user",
 				description:
-					"Delete user (keep in mind: if the player is in the server, they won't be kicked off)",
+					"- Deleted players will lose access the verified role\n" +
+					"- Deleting a player will revoke their access from being able to join the Minecraft server, but won't be kicked off the server if they're already on the server (so make sure to use Minecraft commands to kick as well)",
 			},
 			params: t.Object({ id: t.String() }),
 			response: {
