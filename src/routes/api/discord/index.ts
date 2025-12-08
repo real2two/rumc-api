@@ -6,6 +6,6 @@ export const discordRoutes = new Elysia({
 	tags: ["Discord"],
 })
 	// Handle Carbon routes
-	.all("", ({ request }) => handler(request, {}), {
+	.all("/*", ({ request }) => handler(request, {}), {
 		detail: { hide: true },
 	});
