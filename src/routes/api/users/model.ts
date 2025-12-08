@@ -1,8 +1,8 @@
 import { t } from "elysia";
 import { Pattern } from "~/utils/regex";
 
-export const whitelistModel = {
-	get: t.Object({
+export namespace WhitelistModel {
+	export const get = t.Object({
 		id: t.String(),
 
 		email: t.Union([t.String(), t.Null()]),
@@ -14,8 +14,9 @@ export const whitelistModel = {
 		banned: t.Boolean(),
 
 		created_at: t.Date(),
-	}),
-	create: t.Union([
+	});
+
+	export const create = t.Union([
 		t.Object({
 			email: t.String({ format: "email" }),
 			parent_id: t.Null(),
@@ -34,13 +35,14 @@ export const whitelistModel = {
 
 			banned: t.Boolean(),
 		}),
-	]),
-	update: t.Partial(
+	]);
+
+	export const update = t.Partial(
 		t.Object({
 			uuid: t.Union([t.String({ format: "uuid" }), t.Null()]),
 			discord_id: t.Union([t.String({ pattern: Pattern.Snowflake }), t.Null()]),
 
 			banned: t.Boolean(),
 		}),
-	),
-};
+	);
+}

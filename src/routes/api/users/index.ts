@@ -9,7 +9,7 @@ import {
 	listWhitelists,
 	updateWhitelist,
 } from "~/utils/whitelist";
-import { whitelistModel } from "./models";
+import { WhitelistModel } from "./model";
 
 export const usersRoute = new Elysia({
 	prefix: "/users",
@@ -26,7 +26,7 @@ export const usersRoute = new Elysia({
 		response: {
 			200: t.Object({
 				total: t.Number(),
-				users: t.Array(whitelistModel.get),
+				users: t.Array(WhitelistModel.get),
 			}),
 		},
 	})
@@ -47,8 +47,8 @@ export const usersRoute = new Elysia({
 			params: t.Object({ id: t.String() }),
 			response: {
 				200: t.Object({
-					user: whitelistModel.get,
-					relations: t.Array(whitelistModel.get),
+					user: WhitelistModel.get,
+					relations: t.Array(WhitelistModel.get),
 				}),
 				404: t.Object({ error: t.Literal(ErrorCodes.NotFound) }),
 			},
@@ -68,7 +68,7 @@ export const usersRoute = new Elysia({
 		},
 		{
 			detail: { description: "Whitelist a player" },
-			body: whitelistModel.create,
+			body: WhitelistModel.create,
 			response: {
 				200: t.Object({ id: t.String(), created_at: t.Date() }),
 				409: t.Object({
@@ -101,7 +101,7 @@ export const usersRoute = new Elysia({
 					"Update user (keep in mind: if the player is banned, they won't be kicked off the server)",
 			},
 			params: t.Object({ id: t.String() }),
-			body: whitelistModel.update,
+			body: WhitelistModel.update,
 			response: {
 				204: t.Literal("No Content"),
 				404: t.Object({ error: t.Literal(ErrorCodes.NotFound) }),
