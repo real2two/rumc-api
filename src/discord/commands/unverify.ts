@@ -56,8 +56,8 @@ class UnverifyDiscordCommand extends Command {
 		const player = await getMinecraftPlayer(whitelisted.uuid);
 		return interaction.reply({
 			content:
-				`🗑️ Unverified <@${user.id}> / \`${player?.username}\` (\`${player?.id}\`)` +
-				"**Warning**: This doesn't kick the player out of the Minecraft server if they're in the server currently.",
+				`🗑️ Unverified <@${user.id}> / \`${player?.username}\` (\`${player?.id}\`)\n` +
+				"-# **Warning**: This doesn't kick the player out of the Minecraft server if they're in the server currently.",
 			allowedMentions: {},
 			ephemeral: true,
 		});
