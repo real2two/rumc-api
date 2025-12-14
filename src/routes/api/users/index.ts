@@ -131,7 +131,12 @@ export const usersRoute = new Elysia({
 			params: t.Object({ id: t.String() }),
 			response: {
 				204: t.Literal("No Content"),
-				404: t.Object({ error: t.Literal(ErrorCodes.NotFound) }),
+				404: t.Object({
+					error: t.Union([
+						t.Literal(ErrorCodes.NotFound),
+						t.Literal(ErrorCodes.CannotDeleteBannedUser),
+					]),
+				}),
 			},
 		},
 	);

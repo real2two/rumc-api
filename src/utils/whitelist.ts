@@ -211,6 +211,7 @@ export async function deleteWhitelist(id: string) {
 		),
 	});
 	if (!user) return { error: Errors.NotFound };
+	if (user.banned) return { error: Errors.CannotDeleteBannedUser };
 
 	const deletedUsers = await db
 		.delete(serverWhitelists)

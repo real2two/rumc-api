@@ -7,6 +7,7 @@ import {
 	InteractionContextType,
 	Permission,
 } from "@buape/carbon";
+import { ErrorCodes } from "~/types/errors";
 import { DISCORD_ADMIN_IDS } from "~/utils/admin";
 import { getMinecraftPlayer } from "~/utils/minecraft";
 import { deleteWhitelist } from "~/utils/whitelist";
@@ -39,25 +40,38 @@ class UnverifyDiscordCommand extends Command {
 
 		const { error, user: whitelisted } = await deleteWhitelist(user.id);
 		if (error) {
-			return interaction.reply({
-				content: "❌ Failed to find user",
-				ephemeral: true,
-			});
+			switch (error.code) {
+				case ErrorCodes.NotFound:
+					return interaction.reply({
+						content: "❌ Failed to find user",
+						ephemeral: true,
+					});
+				case ErrorCodes.CannotDeleteBannedUser:
+					return interaction.reply({
+						content: "❌ Cannot delete banned user",
+						ephemeral: true,
+					});
+				default:
+					return interaction.reply({
+						content: "🛑 An unexpected error has occurred",
+						ephemeral: true,
+					});
+			}
 		}
 
+		const text: string[] = [];
 		if (!whitelisted.uuid) {
-			return interaction.reply({
-				content: `🗑️ Unverified <@${user.id}>`,
-				allowedMentions: {},
-				ephemeral: true,
-			});
+			text.push(`🗑️ Unverified <@${user.id}>`);
+		} else {
+			const player = await getMinecraftPlayer(whitelisted.uuid);
+			text.push(
+				`🗑️ Unverified <@${user.id}> / \`${player?.username}\` (\`${player?.id}\`)`,
+				"-# **Warning**: This doesn't kick the player out of the Minecraft server if they're in the server currently.",
+			);
 		}
 
-		const player = await getMinecraftPlayer(whitelisted.uuid);
 		return interaction.reply({
-			content:
-				`🗑️ Unverified <@${user.id}> / \`${player?.username}\` (\`${player?.id}\`)\n` +
-				"-# **Warning**: This doesn't kick the player out of the Minecraft server if they're in the server currently.",
+			content: text.join("\n"),
 			allowedMentions: {},
 			ephemeral: true,
 		});
