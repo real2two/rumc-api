@@ -26,6 +26,7 @@ declare global {
 
 			DISCORD_GUILD_ID: string;
 			DISCORD_VERIFIED_ROLE_ID: string;
+			DISCORD_ADMIN_IDS: string;
 		}
 	}
 }

@@ -203,7 +203,6 @@ export async function updateWhitelist(
 export async function deleteWhitelist(id: string) {
 	const isIdUuid = Regex.Uuid.test(id);
 	const user = await db.query.serverWhitelists.findFirst({
-		columns: { id: true },
 		where: or(
 			...(isIdUuid ? [eq(serverWhitelists.id, id)] : []),
 			eq(serverWhitelists.email, id.toLowerCase()),
@@ -228,5 +227,5 @@ export async function deleteWhitelist(id: string) {
 		await revokeDiscordVerifiedRole(discordId);
 	}
 
-	return {};
+	return { user };
 }

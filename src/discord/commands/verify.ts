@@ -16,6 +16,7 @@ import {
 } from "@buape/carbon";
 import { env } from "elysia";
 import { grantDiscordVerifiedRole } from "~/discord/utils";
+import { DISCORD_ADMIN_IDS } from "~/utils/admin";
 import { createCode } from "~/utils/crypto";
 import { transporter } from "~/utils/mail";
 import { getMinecraftPlayer } from "~/utils/minecraft";
@@ -393,6 +394,16 @@ export class CreateVerifyModalCommand extends Command {
 	override components = [new VerifyModalInitialButton()];
 
 	async run(interaction: CommandInteraction) {
+		if (
+			!interaction.userId ||
+			!DISCORD_ADMIN_IDS.includes(interaction.userId)
+		) {
+			return interaction.reply({
+				content: "🛑 You don't have permission to use this command",
+				ephemeral: true,
+			});
+		}
+
 		await interaction.reply({
 			content: "Click on the button below to start verification:",
 			components: [new Row([new VerifyModalInitialButton()])],

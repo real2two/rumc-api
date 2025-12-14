@@ -1,7 +1,9 @@
 import { Client } from "@buape/carbon";
 import { createHandler } from "@buape/carbon/adapters/fetch";
 import { env } from "elysia";
+
 import { GuestCommand } from "./commands/guests";
+import { UnverifyCommand } from "./commands/unverify";
 import { CreateVerifyModalCommand } from "./commands/verify";
 import { WhoIsCommand } from "./commands/whois";
 
@@ -15,9 +17,11 @@ export const client = new Client(
 	},
 	{
 		commands: [
-			new GuestCommand(),
-			new CreateVerifyModalCommand(),
 			new WhoIsCommand(),
+			new GuestCommand(),
+
+			new CreateVerifyModalCommand(),
+			new UnverifyCommand(),
 		],
 	},
 );
