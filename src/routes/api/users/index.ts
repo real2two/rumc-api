@@ -18,7 +18,12 @@ export const usersRoute = new Elysia({
 	// Read-only whitelists authenticated routes (allows env.TOKEN and CampusCraft)
 	.use(authReadWhitelistsPlugin)
 	.get("", ({ query }) => listWhitelists(query), {
-		detail: { summary: "List users" },
+		detail: {
+			summary: "List users",
+			description:
+				'- To filter only Rutgers students, check if the email ends with "@scarletmail.rutgers.edu"\n' +
+				"- If parent_id is not null, the user is a guest",
+		},
 		query: t.Object({
 			limit: t.Integer({ minimum: 1, maximum: 1000, default: 100 }),
 			offset: t.Integer({ minimum: 0, default: 0 }),
