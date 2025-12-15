@@ -23,7 +23,7 @@ export async function listWhitelists({
 			offset: offset,
 		}),
 	]);
-	return { total, users };
+	return { current: users.length, total, users };
 }
 
 export async function isWhitelisted(id: string) {

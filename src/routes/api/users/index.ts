@@ -30,6 +30,7 @@ export const usersRoute = new Elysia({
 		}),
 		response: {
 			200: t.Object({
+				current: t.Number(),
 				total: t.Number(),
 				users: t.Array(WhitelistModel.get),
 			}),
