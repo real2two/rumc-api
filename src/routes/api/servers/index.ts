@@ -22,7 +22,9 @@ export const serversRoutes = new Elysia({
 			if (cachedServer) return cachedServer;
 
 			// If not cached, fetch server
-			const res = await fetch(`https://api.mcsrvstat.us/3/${serverAddress}`);
+			const res = await fetch(
+				`https://api.mcstatus.io/v2/status/java/${serverAddress}`,
+			);
 			if (!res.ok) throw new Error("Failed to fetch server");
 
 			// Get response
@@ -36,7 +38,11 @@ export const serversRoutes = new Elysia({
 				online: data.online,
 				players: data.players?.online || 0,
 			};
-			await setServerCache(params.id, server);
+			await setServerCache(
+				params.id,
+				server,
+				Number.parseInt(res.headers.get("X-Cache-Time-Remaining") || "60", 10),
+			);
 
 			// Send response
 			return server;

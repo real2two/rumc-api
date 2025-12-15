@@ -13,12 +13,16 @@ export async function getServerCache(id: string) {
 	return JSON.parse(value) as CachedServer;
 }
 
-export function setServerCache(id: string, value: CachedServer) {
+export function setServerCache(
+	id: string,
+	value: CachedServer,
+	expires: number,
+) {
 	return redis.set(
 		`rumc:cached-server:${id}`,
 		JSON.stringify(value),
 		"EX",
-		60, // 1 minute
+		expires || 60, // 1 minute
 	);
 }
 
