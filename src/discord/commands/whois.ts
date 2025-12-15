@@ -6,6 +6,7 @@ import {
 	CommandWithSubcommands,
 	InteractionContextType,
 } from "@buape/carbon";
+import type { serverWhitelists } from "~/db/schema";
 import { getMinecraftPlayer } from "~/utils/minecraft";
 import { getWhitelist } from "~/utils/whitelist";
 
@@ -48,13 +49,8 @@ class WhoIsDiscordCommand extends Command {
 			});
 		}
 
-		const infoText = `<@${user.id}> is \`${player.username}\``;
-		const footerText = whitelisted.parent_id
-			? "Invited by a Rutgers student 👽"
-			: "Verified as a Rutgers student 🎉";
-
 		return interaction.reply({
-			content: `ℹ️ ${infoText}.\n-# > ${footerText}`,
+			content: createWhoIsText(whitelisted, player.username),
 			allowedMentions: {},
 			ephemeral: true,
 		});
@@ -94,15 +90,8 @@ class WhoIsMinecraftCommand extends Command {
 			});
 		}
 
-		const infoText = whitelisted.discord_id
-			? `<@${whitelisted.discord_id}> is \`${player.username}\`.`
-			: `\`${player.username}\` doesn't have a linked Discord account.`;
-		const footerText = whitelisted.parent_id
-			? "Invited by a Rutgers student 👽"
-			: "Verified as a Rutgers student 🎉";
-
 		return interaction.reply({
-			content: `ℹ️ ${infoText}\n-# > ${footerText}`,
+			content: createWhoIsText(whitelisted, player.username),
 			allowedMentions: {},
 			ephemeral: true,
 		});
@@ -116,4 +105,20 @@ export class WhoIsCommand extends CommandWithSubcommands {
 	override contexts = [InteractionContextType.Guild];
 
 	subcommands = [new WhoIsDiscordCommand(), new WhoIsMinecraftCommand()];
+}
+
+function createWhoIsText(
+	whitelisted: typeof serverWhitelists.$inferSelect,
+	username: string,
+) {
+	return (
+		`ℹ️ <@${whitelisted.discord_id}> is \`${username}\`.` +
+		`-# > ${
+			whitelisted.parent_id
+				? "Invited by a verified player 👽"
+				: whitelisted.email?.endsWith("@scarletmail.rutgers.edu")
+					? "Verified as a Rutgers student 🎉"
+					: "Verified as a VIP 💼"
+		}`
+	);
 }
