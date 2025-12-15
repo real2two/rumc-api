@@ -4,6 +4,7 @@ import { getServerCache, setServerCache } from "~/utils/redis";
 
 const SERVER_ADDRESSES = {
 	survival: env.MINECRAFT_SURVIVAL_IP,
+	limbo: env.MINECRAFT_LIMBO_IP,
 } as const;
 
 export const serversRoutes = new Elysia({
@@ -49,9 +50,11 @@ export const serversRoutes = new Elysia({
 	{
 		detail: {
 			summary: "Get server status",
-			description: "Get online status and player count",
+			description: "Get online status and player count (cached)",
 		},
-		params: t.Object({ id: t.Literal("survival") }),
+		params: t.Object({
+			id: t.Union([t.Literal("survival"), t.Literal("limbo")]),
+		}),
 		response: {
 			200: t.Object({ online: t.Boolean(), players: t.Number() }),
 			500: t.Object({ error: t.Literal(ErrorCodes.InternalServerError) }),

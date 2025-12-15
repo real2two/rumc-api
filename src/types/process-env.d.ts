@@ -9,6 +9,7 @@ declare global {
 			CORS_ORIGIN?: string;
 
 			MINECRAFT_SURVIVAL_IP: string;
+			MINECRAFT_LIMBO_IP: string;
 
 			POSTGRES_URL: string;
 			REDIS_URL: string;
