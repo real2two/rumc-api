@@ -112,7 +112,7 @@ function createWhoIsText(
 	username: string,
 ) {
 	return (
-		`ℹ️ <@${whitelisted.discord_id}> is \`${username}\`.` +
+		`ℹ️ <@${whitelisted.discord_id}> is \`${username}\`.\n` +
 		`-# > ${
 			whitelisted.parent_id
 				? "Invited by a verified player 👽"
