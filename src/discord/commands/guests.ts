@@ -94,6 +94,12 @@ export class GuestAddCommand extends Command {
 				ephemeral: true,
 			});
 		}
+		if (user.banned) {
+			return interaction.reply({
+				content: "❌ You're banned from the server.",
+				ephemeral: true,
+			});
+		}
 
 		// Cannot be bot
 		if (guestUser.bot) {
