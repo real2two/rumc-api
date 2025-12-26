@@ -25,7 +25,7 @@ export const usersRoute = new Elysia({
 				"- If parent_id is not null, the user is a guest",
 		},
 		query: t.Object({
-			limit: t.Integer({ minimum: 1, maximum: 1000, default: 100 }),
+			limit: t.Integer({ minimum: 1, maximum: 10000, default: 100 }),
 			offset: t.Integer({ minimum: 0, default: 0 }),
 		}),
 		response: {
