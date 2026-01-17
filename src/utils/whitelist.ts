@@ -163,7 +163,6 @@ export async function updateWhitelist(
 ) {
 	const isIdUuid = Regex.Uuid.test(id);
 	const user = await db.query.serverWhitelists.findFirst({
-		columns: { id: true, discord_id: true },
 		where: or(
 			...(isIdUuid ? [eq(serverWhitelists.id, id)] : []),
 			eq(serverWhitelists.email, id.toLowerCase()),
@@ -185,8 +184,7 @@ export async function updateWhitelist(
 		await db
 			.update(serverWhitelists)
 			.set(data)
-			.where(eq(serverWhitelists.id, user.id))
-			.returning({ id: serverWhitelists.id });
+			.where(eq(serverWhitelists.id, user.id));
 
 		if (
 			"discord_id" in data &&
@@ -197,7 +195,7 @@ export async function updateWhitelist(
 		}
 	}
 
-	return {};
+	return { user: { ...user, ...data } };
 }
 
 export async function deleteWhitelist(id: string) {

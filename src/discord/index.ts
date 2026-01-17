@@ -5,7 +5,9 @@ import { env } from "elysia";
 import { GuestCommand } from "./commands/guests";
 import { UnverifyCommand } from "./commands/unverify";
 import { CreateVerifyModalCommand } from "./commands/verify";
+import { WbanDiscordCommand } from "./commands/wban";
 import { WhoIsCommand } from "./commands/whois";
+import { WunbanDiscordCommand } from "./commands/wunban";
 
 export const client = new Client(
 	{
@@ -22,6 +24,8 @@ export const client = new Client(
 
 			new CreateVerifyModalCommand(),
 			new UnverifyCommand(),
+			new WbanDiscordCommand(),
+			new WunbanDiscordCommand(),
 		],
 	},
 );
