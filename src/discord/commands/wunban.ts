@@ -1,7 +1,10 @@
 import {
 	ApplicationCommandOptionType,
+	ApplicationIntegrationType,
 	Command,
 	type CommandInteraction,
+	InteractionContextType,
+	Permission,
 } from "@buape/carbon";
 import { ErrorCodes } from "~/types/errors";
 import { DISCORD_ADMIN_IDS } from "~/utils/admin";
@@ -19,6 +22,9 @@ export class WunbanDiscordCommand extends Command {
 			required: true,
 		},
 	];
+	override permission = Permission.Administrator;
+	override integrationTypes = [ApplicationIntegrationType.GuildInstall];
+	override contexts = [InteractionContextType.Guild];
 
 	async run(interaction: CommandInteraction) {
 		if (
