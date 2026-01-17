@@ -3,6 +3,7 @@ import {
 	ApplicationIntegrationType,
 	Command,
 	type CommandInteraction,
+	CommandWithSubcommands,
 	InteractionContextType,
 	Permission,
 } from "@buape/carbon";
@@ -12,7 +13,7 @@ import { getMinecraftPlayer } from "~/utils/minecraft";
 import { updateWhitelist } from "~/utils/whitelist";
 
 export class WunbanDiscordCommand extends Command {
-	name = "wunban";
+	name = "discord";
 	override description = "Unban player using Discord user";
 	override options = [
 		{
@@ -22,9 +23,6 @@ export class WunbanDiscordCommand extends Command {
 			required: true,
 		},
 	];
-	override permission = Permission.Administrator;
-	override integrationTypes = [ApplicationIntegrationType.GuildInstall];
-	override contexts = [InteractionContextType.Guild];
 
 	async run(interaction: CommandInteraction) {
 		if (
@@ -72,4 +70,14 @@ export class WunbanDiscordCommand extends Command {
 			ephemeral: true,
 		});
 	}
+}
+
+export class WunbanCommand extends CommandWithSubcommands {
+	name = "wunban";
+	override description = "Unban user";
+	override permission = Permission.Administrator;
+	override integrationTypes = [ApplicationIntegrationType.GuildInstall];
+	override contexts = [InteractionContextType.Guild];
+
+	subcommands = [new WunbanDiscordCommand()];
 }

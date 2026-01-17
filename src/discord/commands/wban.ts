@@ -3,6 +3,7 @@ import {
 	ApplicationIntegrationType,
 	Command,
 	type CommandInteraction,
+	CommandWithSubcommands,
 	InteractionContextType,
 	Permission,
 } from "@buape/carbon";
@@ -11,8 +12,8 @@ import { DISCORD_ADMIN_IDS } from "~/utils/admin";
 import { getMinecraftPlayer } from "~/utils/minecraft";
 import { updateWhitelist } from "~/utils/whitelist";
 
-export class WbanDiscordCommand extends Command {
-	name = "wban";
+class WbanDiscordCommand extends Command {
+	name = "discord";
 	override description = "Ban player using Discord user";
 	override options = [
 		{
@@ -22,9 +23,6 @@ export class WbanDiscordCommand extends Command {
 			required: true,
 		},
 	];
-	override permission = Permission.Administrator;
-	override integrationTypes = [ApplicationIntegrationType.GuildInstall];
-	override contexts = [InteractionContextType.Guild];
 
 	async run(interaction: CommandInteraction) {
 		if (
@@ -75,4 +73,14 @@ export class WbanDiscordCommand extends Command {
 			ephemeral: true,
 		});
 	}
+}
+
+export class WbanCommand extends CommandWithSubcommands {
+	name = "wban";
+	override description = "Ban user";
+	override permission = Permission.Administrator;
+	override integrationTypes = [ApplicationIntegrationType.GuildInstall];
+	override contexts = [InteractionContextType.Guild];
+
+	subcommands = [new WbanDiscordCommand()];
 }
