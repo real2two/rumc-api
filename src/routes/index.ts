@@ -9,9 +9,18 @@ new Elysia()
 		switch (code) {
 			case "NOT_FOUND":
 				return "Not Found";
+			case "PARSE":
+				set.status = 422;
+				return "Unprocessable Content";
 			case "VALIDATION":
 				set.status = 400;
 				return JSON.parse(error.message);
+			case "INVALID_FILE_TYPE":
+				set.status = 400;
+				return "Invalid File Type";
+			case "INVALID_COOKIE_SIGNATURE":
+				set.status = 400;
+				return "Invalid Cookie Signature";
 			default:
 				console.error(`An unexpected error has occurred (${code}):`, error);
 				return status(500, "Internal Server Error");
