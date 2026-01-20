@@ -15,7 +15,7 @@ export const usersRoute = new Elysia({
 	prefix: "/users",
 	tags: ["Whitelists"],
 })
-	// Read-only whitelists authenticated routes (allows env.TOKEN and CampusCraft)
+	// Read-only whitelists authenticated routes (allows env.TOKEN, env.TOKEN_READONLY and CampusCraft)
 	.use(authReadWhitelistsPlugin)
 	.get("", ({ query }) => listWhitelists(query), {
 		detail: {

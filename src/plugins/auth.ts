@@ -1,7 +1,7 @@
 import { env } from "bun";
 import { Elysia, t } from "elysia";
 
-const allowedTokens = [env.TOKEN, env.TOKEN_CAMPUSCRAFT];
+const allowedTokens = [env.TOKEN, env.TOKEN_READONLY, env.TOKEN_CAMPUSCRAFT];
 
 export const authPlugin = new Elysia({ name: "auth" })
 	.guard({
