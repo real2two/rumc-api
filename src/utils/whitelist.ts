@@ -83,6 +83,7 @@ export async function addWhitelist(data: {
 	uuid: string | null;
 	discord_id: string | null;
 	banned?: boolean;
+	ban_reason?: string | null;
 }) {
 	if (!data.email && !data.parent_id) {
 		throw new Error("If parent_id is not present, email is required");
@@ -129,6 +130,8 @@ export async function addWhitelist(data: {
 		if (count) return { error: Errors.DiscordIdUsed };
 	}
 
+	if (data.banned === false) data.ban_reason = null;
+
 	try {
 		const [user] = await db
 			.insert(serverWhitelists)
@@ -159,6 +162,7 @@ export async function updateWhitelist(
 		uuid?: string | null;
 		discord_id?: string | null;
 		banned?: boolean;
+		ban_reason?: string | null;
 	},
 ) {
 	const isIdUuid = Regex.Uuid.test(id);
@@ -173,6 +177,8 @@ export async function updateWhitelist(
 	if (!user) return { error: Errors.NotFound };
 
 	if (Object.keys(data).length > 0) {
+		if (!data.banned) data.ban_reason = null;
+
 		if (
 			"discord_id" in data &&
 			user.discord_id !== data.discord_id &&

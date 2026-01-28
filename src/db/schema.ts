@@ -21,6 +21,7 @@ export const serverWhitelists = pgTable("server_whitelists", {
 	discord_id: text("discord_id").unique(),
 
 	banned: boolean("banned").notNull().default(false),
+	ban_reason: text("ban_reason"),
 
 	created_at: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
 });

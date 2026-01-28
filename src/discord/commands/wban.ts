@@ -22,6 +22,12 @@ class WbanDiscordCommand extends Command {
 			description: "The Discord account",
 			required: true,
 		},
+		{
+			name: "reason",
+			type: ApplicationCommandOptionType.String as const,
+			description: "The ban reason",
+			required: false,
+		},
 	];
 
 	async run(interaction: CommandInteraction) {
@@ -38,8 +44,11 @@ class WbanDiscordCommand extends Command {
 		const user = interaction.options.getUser("user");
 		if (!user) return;
 
+		const banReason = interaction.options.getString("reason");
+
 		const { error, user: whitelisted } = await updateWhitelist(user.id, {
 			banned: true,
+			ban_reason: banReason,
 		});
 		if (error) {
 			switch (error.code) {

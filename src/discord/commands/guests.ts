@@ -82,9 +82,18 @@ export class GuestAddCommand extends Command {
 		if (!interaction.userId) return;
 
 		// Options
-		const guestUser = interaction.options.getUser("user");
+		const guestMember = interaction.options.getMember("user");
 		const guestMinecraft = interaction.options.getString("minecraft")?.trim();
-		if (!guestUser || !guestMinecraft) return;
+
+		if (!guestMinecraft) return;
+
+		// Guest must be in the server
+		if (!guestMember) {
+			return interaction.reply({
+				content: "❌ This member is not in the server.",
+				ephemeral: true,
+			});
+		}
 
 		// Get user
 		const { user } = await getWhitelist(interaction.userId);
@@ -102,17 +111,9 @@ export class GuestAddCommand extends Command {
 		}
 
 		// Cannot be bot
-		if (guestUser.bot) {
+		if (guestMember.user.bot) {
 			return interaction.reply({
 				content: "❌ Cannot invite a bot as a guest.",
-				ephemeral: true,
-			});
-		}
-
-		// Guest must be in the server
-		if (!interaction.options.resolved.members?.[guestUser.id]) {
-			return interaction.reply({
-				content: "❌ This member is not in the server.",
 				ephemeral: true,
 			});
 		}
@@ -132,7 +133,7 @@ export class GuestAddCommand extends Command {
 			email: null,
 			parent_id: user.id,
 			uuid: player.id,
-			discord_id: guestUser.id,
+			discord_id: guestMember.user.id,
 		});
 		if (error) {
 			switch (error.code) {
@@ -163,7 +164,7 @@ export class GuestAddCommand extends Command {
 
 		// Respond to interaction
 		await interaction.reply({
-			content: `✅ Verified <@${guestUser.id}> as \`${player.username}\`!`,
+			content: `✅ Verified <@${guestMember.user.id}> as \`${player.username}\`!`,
 			ephemeral: true,
 		});
 	}

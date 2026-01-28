@@ -1,0 +1,1 @@
+ALTER TABLE "server_whitelists" ADD COLUMN "ban_reason" text;
