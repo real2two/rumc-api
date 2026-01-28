@@ -27,7 +27,7 @@ export namespace WhitelistModel {
 
 			banned: t.Boolean(),
 			ban_reason: t.Union([
-				t.String({ minLength: 1, maxLength: 2048 }),
+				t.String({ minLength: 0, maxLength: 2048 }),
 				t.Null(),
 			]),
 		}),
@@ -40,7 +40,7 @@ export namespace WhitelistModel {
 
 			banned: t.Boolean(),
 			ban_reason: t.Union([
-				t.String({ minLength: 1, maxLength: 2048 }),
+				t.String({ minLength: 0, maxLength: 2048 }),
 				t.Null(),
 			]),
 		}),

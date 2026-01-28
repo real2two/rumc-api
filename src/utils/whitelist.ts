@@ -130,7 +130,8 @@ export async function addWhitelist(data: {
 		if (count) return { error: Errors.DiscordIdUsed };
 	}
 
-	if (data.banned === false) data.ban_reason = null;
+	// If player isn't banned or ban reason's length is 0, set it to null
+	if (!data.banned || !data.ban_reason) data.ban_reason = null;
 
 	try {
 		const [user] = await db
@@ -177,7 +178,8 @@ export async function updateWhitelist(
 	if (!user) return { error: Errors.NotFound };
 
 	if (Object.keys(data).length > 0) {
-		if (!data.banned) data.ban_reason = null;
+		// If player isn't banned or ban reason's length is 0, set it to null
+		if (!data.banned || !data.ban_reason) data.ban_reason = null;
 
 		if (
 			"discord_id" in data &&

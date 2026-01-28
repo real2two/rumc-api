@@ -48,7 +48,7 @@ class WbanDiscordCommand extends Command {
 
 		const { error, user: whitelisted } = await updateWhitelist(user.id, {
 			banned: true,
-			ban_reason: banReason || null,
+			ban_reason: banReason,
 		});
 		if (error) {
 			switch (error.code) {
