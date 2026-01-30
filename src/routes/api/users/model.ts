@@ -55,4 +55,8 @@ export namespace WhitelistModel {
 			ban_reason: t.Union([t.String(), t.Null()]),
 		}),
 	);
+
+	export const ban = t.Partial(
+		t.Object({ reason: t.Union([t.String(), t.Null()]) }),
+	);
 }

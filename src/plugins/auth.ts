@@ -1,46 +1,27 @@
 import { env } from "bun";
 import { Elysia, t } from "elysia";
+import { AuthRole } from "~/types/auth";
 
-const allowedTokens = [env.TOKEN, env.TOKEN_READONLY, env.TOKEN_CAMPUSCRAFT];
+const roles = {
+	[env.TOKEN]: AuthRole.Admin,
+	[env.TOKEN_SERVER]: AuthRole.Server,
+	[env.TOKEN_CAMPUSCRAFT]: AuthRole.Read,
+} as const;
 
-export const authPlugin = new Elysia({ name: "auth" })
-	.guard({
-		as: "local",
-		response: {
-			401: t.Literal("Unauthorized"),
-			403: t.Literal("Forbidden"),
-		},
-		beforeHandle({ headers, set }) {
-			if (headers.authorization !== env.TOKEN) {
-				if (
-					headers.authorization &&
-					allowedTokens.includes(headers.authorization)
-				) {
-					set.status = 403;
-					return "Forbidden";
-				}
+export const auth = (allowedRoles: AuthRole[]) =>
+	new Elysia({ name: "auth", seed: [...allowedRoles].sort().join(",") })
+		.guard({
+			as: "local",
+			response: {
+				401: t.Literal("Unauthorized"),
+				403: t.Literal("Forbidden"),
+			},
+			beforeHandle({ headers, status }) {
+				if (!headers.authorization) return status(401, "Unauthorized");
 
-				set.status = 401;
-				return "Unauthorized";
-			}
-		},
-	})
-	.as("scoped");
-
-export const authReadWhitelistsPlugin = new Elysia({
-	name: "auth-read-whitelists",
-})
-	.guard({
-		as: "local",
-		response: { 401: t.Literal("Unauthorized") },
-		beforeHandle({ headers, set }) {
-			if (
-				!headers.authorization ||
-				!allowedTokens.includes(headers.authorization)
-			) {
-				set.status = 401;
-				return "Unauthorized";
-			}
-		},
-	})
-	.as("scoped");
+				const role = roles[headers.authorization];
+				if (!role) return status(401, "Unauthorized");
+				if (!allowedRoles.includes(role)) return status(403, "Forbidden");
+			},
+		})
+		.as("scoped");

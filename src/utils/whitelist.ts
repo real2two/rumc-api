@@ -9,15 +9,26 @@ import { Errors } from "~/types/errors";
 import { Regex } from "./regex";
 
 export async function listWhitelists({
+	banned,
 	limit,
 	offset,
 }: {
+	banned?: boolean | null;
 	limit?: number;
 	offset?: number;
 }) {
 	const [total, users] = await Promise.all([
-		db.$count(serverWhitelists),
+		db.$count(
+			serverWhitelists,
+			typeof banned === "boolean"
+				? eq(serverWhitelists.banned, banned)
+				: undefined,
+		),
 		db.query.serverWhitelists.findMany({
+			where:
+				typeof banned === "boolean"
+					? eq(serverWhitelists.banned, banned)
+					: undefined,
 			orderBy: desc(serverWhitelists.created_at),
 			limit: limit,
 			offset: offset,

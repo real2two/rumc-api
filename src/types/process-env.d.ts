@@ -4,7 +4,7 @@ declare global {
 			PORT: string;
 
 			TOKEN: string;
-			TOKEN_READONLY: string;
+			TOKEN_SERVER: string;
 			TOKEN_CAMPUSCRAFT: string;
 
 			CORS_ORIGIN?: string;
