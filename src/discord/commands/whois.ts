@@ -7,6 +7,7 @@ import {
 	InteractionContextType,
 } from "@buape/carbon";
 import type { serverWhitelists } from "~/db/schema";
+import { DISCORD_ADMIN_IDS } from "~/utils/admin";
 import { getMinecraftPlayer } from "~/utils/minecraft";
 import { getWhitelist } from "~/utils/whitelist";
 
@@ -50,7 +51,11 @@ class WhoIsDiscordCommand extends Command {
 		}
 
 		return interaction.reply({
-			content: createWhoIsText(whitelisted, player.username),
+			content: createWhoIsText({
+				whitelisted,
+				username: player.username,
+				debug: DISCORD_ADMIN_IDS.includes(interaction.userId ?? ""),
+			}),
 			allowedMentions: {},
 			ephemeral: true,
 		});
@@ -91,7 +96,11 @@ class WhoIsMinecraftCommand extends Command {
 		}
 
 		return interaction.reply({
-			content: createWhoIsText(whitelisted, player.username),
+			content: createWhoIsText({
+				whitelisted,
+				username: player.username,
+				debug: DISCORD_ADMIN_IDS.includes(interaction.userId ?? ""),
+			}),
 			allowedMentions: {},
 			ephemeral: true,
 		});
@@ -107,10 +116,15 @@ export class WhoIsCommand extends CommandWithSubcommands {
 	subcommands = [new WhoIsDiscordCommand(), new WhoIsMinecraftCommand()];
 }
 
-function createWhoIsText(
-	whitelisted: typeof serverWhitelists.$inferSelect,
-	username: string,
-) {
+function createWhoIsText({
+	whitelisted,
+	username,
+	debug = false,
+}: {
+	whitelisted: typeof serverWhitelists.$inferSelect;
+	username: string;
+	debug?: boolean;
+}) {
 	return (
 		`ℹ️ <@${whitelisted.discord_id}> is \`${username}\`.\n` +
 		`-# > ${
@@ -119,6 +133,6 @@ function createWhoIsText(
 				: whitelisted.email?.endsWith("@scarletmail.rutgers.edu")
 					? "Verified as a Rutgers student 🎉"
 					: "Verified as a VIP 💼"
-		}`
+		}${debug ? `\n\n**Debug**\n\`\`\`${JSON.stringify(whitelisted, null, 2)}\`\`\`` : ""}`
 	);
 }
