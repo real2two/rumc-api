@@ -384,6 +384,10 @@ class VerifyModalInitialButton extends Button {
 	}
 }
 
+const UNVERIFIED_MESSAGE = `## Verify your ScarletMail email address at <#1411477039189590056>
+- If you aren't a Rutgers student, you cannot join this server
+- If you need any help, create a ticket at #open-a-ticket`;
+
 export class CreateVerifyModalCommand extends Command {
 	name = "createverifymodal";
 	override description = "Create a modal for verification";
@@ -404,8 +408,16 @@ export class CreateVerifyModalCommand extends Command {
 			});
 		}
 
-		await interaction.reply({
-			content: "Click on the button below to start verification:",
+		if (!interaction.channel || !("send" in interaction.channel)) {
+			return interaction.reply({
+				content: "🛑 You cannot use this command here",
+				ephemeral: true,
+			});
+		}
+
+		await interaction.defer();
+		await interaction.channel.send({
+			content: UNVERIFIED_MESSAGE,
 			components: [new Row([new VerifyModalInitialButton()])],
 		});
 	}
