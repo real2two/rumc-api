@@ -472,5 +472,8 @@ export class CreateVerifyModalCommand extends CommandWithSubcommands {
 	override integrationTypes = [ApplicationIntegrationType.GuildInstall];
 	override contexts = [InteractionContextType.Guild];
 
-	subcommands = [new WbanDiscordCommand()];
+	subcommands = [
+		new CreateVerifyModalUnverifiedCommand(),
+		new CreateVerifyModalVerifiedCommand(),
+	];
 }
