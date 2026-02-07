@@ -415,7 +415,11 @@ export class CreateVerifyModalCommand extends Command {
 			});
 		}
 
-		await interaction.defer();
+		await interaction.reply({
+			content: "✅ Creating message...",
+			ephemeral: true,
+		});
+
 		await interaction.channel.send({
 			content: UNVERIFIED_MESSAGE,
 			components: [new Row([new VerifyModalInitialButton()])],
