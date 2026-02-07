@@ -5,6 +5,7 @@ import {
 	ButtonStyle,
 	Command,
 	type CommandInteraction,
+	CommandWithSubcommands,
 	InteractionContextType,
 	Label,
 	Modal,
@@ -386,14 +387,15 @@ class VerifyModalInitialButton extends Button {
 
 const UNVERIFIED_MESSAGE = `## Verify your ScarletMail email address at <#1411477039189590056>
 - If you aren't a Rutgers student, you cannot join this server
-- If you need any help, create a ticket at #open-a-ticket`;
+- If you need any help, create a ticket at <#1469791832907972638>`;
 
-export class CreateVerifyModalCommand extends Command {
-	name = "createverifymodal";
-	override description = "Create a modal for verification";
-	override permission = Permission.Administrator;
-	override integrationTypes = [ApplicationIntegrationType.GuildInstall];
-	override contexts = [InteractionContextType.Guild];
+const VERIFIED_MESSAGE = `## Click on the button below to start verification
+Having problems or made a mistake, such as entering the wrong username?
+- Create a ticket in <#1437236975051473007>`;
+
+export class CreateVerifyModalUnverifiedCommand extends Command {
+	name = "unverified";
+	override description = "Create a modal for verification (unverified)";
 
 	override components = [new VerifyModalInitialButton()];
 
@@ -425,4 +427,50 @@ export class CreateVerifyModalCommand extends Command {
 			components: [new Row([new VerifyModalInitialButton()])],
 		});
 	}
+}
+
+export class CreateVerifyModalVerifiedCommand extends Command {
+	name = "unverified";
+	override description = "Create a modal for verification (verified)";
+
+	override components = [new VerifyModalInitialButton()];
+
+	async run(interaction: CommandInteraction) {
+		if (
+			!interaction.userId ||
+			!DISCORD_ADMIN_IDS.includes(interaction.userId)
+		) {
+			return interaction.reply({
+				content: "🛑 You don't have permission to use this command",
+				ephemeral: true,
+			});
+		}
+
+		if (!interaction.channel || !("send" in interaction.channel)) {
+			return interaction.reply({
+				content: "🛑 You cannot use this command here",
+				ephemeral: true,
+			});
+		}
+
+		await interaction.reply({
+			content: "✅ Creating message...",
+			ephemeral: true,
+		});
+
+		await interaction.channel.send({
+			content: VERIFIED_MESSAGE,
+			components: [new Row([new VerifyModalInitialButton()])],
+		});
+	}
+}
+
+export class CreateVerifyModalCommand extends CommandWithSubcommands {
+	name = "createverifymodal";
+	override description = "Create a modal for verification";
+	override permission = Permission.Administrator;
+	override integrationTypes = [ApplicationIntegrationType.GuildInstall];
+	override contexts = [InteractionContextType.Guild];
+
+	subcommands = [new WbanDiscordCommand()];
 }
