@@ -430,7 +430,7 @@ export class CreateVerifyModalUnverifiedCommand extends Command {
 }
 
 export class CreateVerifyModalVerifiedCommand extends Command {
-	name = "unverified";
+	name = "verified";
 	override description = "Create a modal for verification (verified)";
 
 	override components = [new VerifyModalInitialButton()];
