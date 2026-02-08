@@ -1,11 +1,7 @@
-import Elysia, { env, t } from "elysia";
+import Elysia, { t } from "elysia";
+import { SERVER_ADDRESSES } from "~/config/servers";
 import { ErrorCodes } from "~/types/errors";
 import { getServerCache, setServerCache } from "~/utils/redis";
-
-const SERVER_ADDRESSES = {
-	survival: env.MINECRAFT_SURVIVAL_IP,
-	limbo: env.MINECRAFT_LIMBO_IP,
-} as const;
 
 export const serversRoutes = new Elysia({
 	prefix: "/servers",
@@ -65,7 +61,12 @@ export const serversRoutes = new Elysia({
 				security: [],
 			},
 			params: t.Object({
-				id: t.Union([t.Literal("survival"), t.Literal("limbo")]),
+				id: t.UnionEnum(
+					Object.keys(SERVER_ADDRESSES) as [
+						keyof typeof SERVER_ADDRESSES,
+						...Array<keyof typeof SERVER_ADDRESSES>,
+					],
+				),
 			}),
 			response: {
 				200: t.Object({ online: t.Boolean(), players: t.Number() }),
