@@ -385,11 +385,11 @@ class VerifyModalInitialButton extends Button {
 	}
 }
 
-const UNVERIFIED_MESSAGE = `## Verify your ScarletMail email address at <#1411477039189590056>
+const UNVERIFIED_MESSAGE = `## Verify your ScarletMail to join
 - If you aren't a Rutgers student, you cannot join this server
 - If you need any help, create a ticket at <#1469791832907972638>`;
 
-const VERIFIED_MESSAGE = `## Click on the button below to start verification
+const VERIFIED_MESSAGE = `## Verify your ScarletMail to join
 Having problems or made a mistake, such as entering the wrong username?
 - Create a ticket in <#1437236975051473007>`;
 
