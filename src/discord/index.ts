@@ -3,11 +3,12 @@ import { createHandler } from "@buape/carbon/adapters/fetch";
 import { env } from "elysia";
 
 import { GuestCommand } from "./commands/guests";
-import { UnverifyCommand } from "./commands/unverify";
 import { CreateVerifyModalCommand } from "./commands/verify";
 import { WbanCommand } from "./commands/wban";
 import { WhoIsCommand } from "./commands/whois";
 import { WunbanCommand } from "./commands/wunban";
+import { WunlinkCommand } from "./commands/wunlink";
+import { UnverifyCommand } from "./commands/wunverify";
 
 export const client = new Client(
 	{
@@ -24,6 +25,7 @@ export const client = new Client(
 
 			new CreateVerifyModalCommand(),
 			new UnverifyCommand(),
+			new WunlinkCommand(),
 			new WbanCommand(),
 			new WunbanCommand(),
 		],

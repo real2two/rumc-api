@@ -12,7 +12,7 @@ import { DISCORD_ADMIN_IDS } from "~/utils/admin";
 import { getMinecraftPlayer } from "~/utils/minecraft";
 import { deleteWhitelist } from "~/utils/whitelist";
 
-class UnverifyDiscordCommand extends Command {
+class WunverifyDiscordCommand extends Command {
 	name = "discord";
 	override description = "Unverify using Discord user";
 	override options = [
@@ -78,12 +78,12 @@ class UnverifyDiscordCommand extends Command {
 	}
 }
 
-export class UnverifyCommand extends CommandWithSubcommands {
-	name = "unverify";
+export class WunverifyCommand extends CommandWithSubcommands {
+	name = "wunverify";
 	override description = "Unverify a user";
 	override permission = Permission.Administrator;
 	override integrationTypes = [ApplicationIntegrationType.GuildInstall];
 	override contexts = [InteractionContextType.Guild];
 
-	subcommands = [new UnverifyDiscordCommand()];
+	subcommands = [new WunverifyDiscordCommand()];
 }
