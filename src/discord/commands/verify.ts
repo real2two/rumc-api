@@ -378,12 +378,12 @@ class VerifyModalInitialButton extends Button {
 			return interaction.reply({
 				content: [
 					"## Verification information",
-					user.email ? `__Email__: \`${user.email}\`` : null,
-					user.parent_id ? `__Invited by__: <@${user.parent_id}>` : null,
-					`__Username__: ${player ? `\`${player.username}\`` : `Unknown (\`${user.uuid}\`)`}`,
-					`__Banned__: ${user.banned ? "✅" : "❌"}`,
+					user.email ? `Email: \`${user.email}\`` : null,
+					user.parent_id ? `Invited by: <@${user.parent_id}>` : null,
+					`Username: ${player ? `\`${player.username}\`` : `Unknown (\`${user.uuid}\`)`}`,
+					`Banned: ${user.banned ? "✅" : "❌"}`,
 					user.ban_reason
-						? `__Ban reason__:\n\`\`\`\n${user.ban_reason}\n\`\`\``
+						? `Ban reason:\n\`\`\`\n${user.ban_reason}\n\`\`\``
 						: null,
 				]
 					.filter((c) => c)
