@@ -387,7 +387,6 @@ class VerifyModalInitialButton extends Button {
 					.filter((c) => c)
 					.join("\n"),
 			});
-
 			return interaction.reply({
 				content: `<@${interaction.userId}> You're already verified!`,
 				embeds: [embed],
