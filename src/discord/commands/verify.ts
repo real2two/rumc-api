@@ -374,27 +374,28 @@ class VerifyModalInitialButton extends Button {
 				return interaction.showModal(new VerifyModalMinecraftModal());
 			}
 
-			// Else error that the user is already verified
+			// Else send a message that says the user is already verified
 			const player = await getMinecraftPlayer(user.uuid);
+
+			const embed = new Embed({
+				color: 0x5865f2,
+				author: { name: "Verification information" },
+				description: [
+					user.email ? `Email: \`${user.email}\`` : null,
+					user.parent_id ? `Invited by: <@${user.parent_id}>` : null,
+					`Username: ${player ? `\`${player.username}\`` : `Unknown (\`${user.uuid}\`)`}`,
+					`Banned: ${user.banned ? "✅" : "❌"}`,
+					user.ban_reason
+						? `Ban reason:\n\`\`\`\n${user.ban_reason}\n\`\`\``
+						: null,
+				]
+					.filter((c) => c)
+					.join("\n"),
+			});
+
 			return interaction.reply({
-				content: "You're already verified!",
-				embeds: [
-					new Embed({
-						color: 0x1abc9c,
-						author: { name: "Verification information" },
-						description: [
-							user.email ? `Email: \`${user.email}\`` : null,
-							user.parent_id ? `Invited by: <@${user.parent_id}>` : null,
-							`Username: ${player ? `\`${player.username}\`` : `Unknown (\`${user.uuid}\`)`}`,
-							`Banned: ${user.banned ? "✅" : "❌"}`,
-							user.ban_reason
-								? `Ban reason:\n\`\`\`\n${user.ban_reason}\n\`\`\``
-								: null,
-						]
-							.filter((c) => c)
-							.join("\n"),
-					}),
-				],
+				content: `<@${interaction.userId}> You're already verified!`,
+				embeds: [embed],
 				allowedMentions: {},
 				ephemeral: true,
 			});
