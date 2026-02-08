@@ -133,6 +133,7 @@ function createWhoIsText({
 				: whitelisted.email?.endsWith("@scarletmail.rutgers.edu")
 					? "Verified as a Rutgers student 🎉"
 					: "Verified as a VIP 💼"
-		}${debug ? `\n### Debug\n\`\`\`${JSON.stringify(whitelisted, null, 2)}\`\`\`` : ""}`
+		}` +
+		`${debug ? `\n### Debug\n\`\`\`${JSON.stringify(whitelisted, null, 2)}\`\`\`` : ""}`
 	);
 }

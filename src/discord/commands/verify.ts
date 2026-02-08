@@ -376,18 +376,13 @@ class VerifyModalInitialButton extends Button {
 
 			// Else send a message that says the user is already verified
 			const player = await getMinecraftPlayer(user.uuid);
-
 			const embed = new Embed({
 				color: 0x5865f2,
 				author: { name: "Verification information" },
 				description: [
-					user.email ? `Email: \`${user.email}\`` : null,
+					user.email ? `Email: ||\`${user.email}\`||` : null,
 					user.parent_id ? `Invited by: <@${user.parent_id}>` : null,
 					`Username: ${player ? `\`${player.username}\`` : `Unknown (\`${user.uuid}\`)`}`,
-					`Banned: ${user.banned ? "✅" : "❌"}`,
-					user.ban_reason
-						? `Ban reason:\n\`\`\`\n${user.ban_reason}\n\`\`\``
-						: null,
 				]
 					.filter((c) => c)
 					.join("\n"),
