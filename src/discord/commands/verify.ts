@@ -406,11 +406,9 @@ const VERIFIED_MESSAGE = `## Verify your ScarletMail to join
 Having problems or made a mistake, such as entering the wrong username?
 - Create a ticket in <#1437236975051473007>`;
 
-export class CreateVerifyModalUnverifiedCommand extends Command {
+class CreateVerifyModalUnverifiedCommand extends Command {
 	name = "unverified";
 	override description = "Create a modal for verification (unverified)";
-
-	override components = [new VerifyModalInitialButton()];
 
 	async run(interaction: CommandInteraction) {
 		if (
@@ -442,11 +440,9 @@ export class CreateVerifyModalUnverifiedCommand extends Command {
 	}
 }
 
-export class CreateVerifyModalVerifiedCommand extends Command {
+class CreateVerifyModalVerifiedCommand extends Command {
 	name = "verified";
 	override description = "Create a modal for verification (verified)";
-
-	override components = [new VerifyModalInitialButton()];
 
 	async run(interaction: CommandInteraction) {
 		if (
@@ -484,6 +480,8 @@ export class CreateVerifyModalCommand extends CommandWithSubcommands {
 	override permission = Permission.Administrator;
 	override integrationTypes = [ApplicationIntegrationType.GuildInstall];
 	override contexts = [InteractionContextType.Guild];
+
+	override components = [new VerifyModalInitialButton()];
 
 	subcommands = [
 		new CreateVerifyModalUnverifiedCommand(),
