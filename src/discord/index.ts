@@ -8,7 +8,7 @@ import { WbanCommand } from "./commands/wban";
 import { WhoIsCommand } from "./commands/whois";
 import { WunbanCommand } from "./commands/wunban";
 import { WunlinkCommand } from "./commands/wunlink";
-import { UnverifyCommand } from "./commands/wunverify";
+import { WunverifyCommand } from "./commands/wunverify";
 
 export const client = new Client(
 	{
@@ -24,7 +24,7 @@ export const client = new Client(
 			new GuestCommand(),
 
 			new CreateVerifyModalCommand(),
-			new UnverifyCommand(),
+			new WunverifyCommand(),
 			new WunlinkCommand(),
 			new WbanCommand(),
 			new WunbanCommand(),
