@@ -1,22 +1,16 @@
-import { getRandomValues } from "node:crypto";
+import { randomInt } from "node:crypto";
+
+const charset =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 /**
- * Generate a randomly generated code
- * @param length The length of the randomly generated code
+ * Generate random code
+ * @param length The length of randomly generated code
  * @returns The randomly generated code
  */
-export function createCode(length: number) {
-	const charset =
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-	const values = new Uint32Array(length);
-	let result = "";
-	getRandomValues(values);
-	for (let i = 0; i < length; i++) {
-		const value = values[i];
-		if (!value) {
-			throw new Error(`values[${i}] is not defined in createCode - ${value}`);
-		}
-		result += charset[value % charset.length];
-	}
-	return result;
+export function createCode(length: number): string {
+  return Array.from(
+    { length },
+    () => charset[randomInt(0, charset.length)],
+  ).join("");
 }
