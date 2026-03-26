@@ -5,12 +5,12 @@ import { ErrorCodes } from "~/types/errors";
 import { getWhitelistPartialUsingMinecraftUuid } from "~/utils/whitelist";
 
 export const whitelistsRoute = new Elysia({
-	prefix: "/whitelists",
+	prefix: "/whitelisted",
 	tags: ["Whitelists"],
 })
 	.use(auth([AuthRole.Admin, AuthRole.Server, AuthRole.Read]))
 	.get(
-		"/whitelisted",
+		"",
 		async ({ query, set }) => {
 			const { error, user } = await getWhitelistPartialUsingMinecraftUuid(
 				query.uuid,
