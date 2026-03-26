@@ -22,7 +22,7 @@ export const whitelistsRoute = new Elysia({
 			return user;
 		},
 		{
-			detail: { summary: "Check if Minecraft user is whitelisted" },
+			detail: { summary: "Get Minecraft player's whitelist" },
 			query: t.Object({ uuid: t.String({ format: "uuid" }) }),
 			response: {
 				200: t.Object({
