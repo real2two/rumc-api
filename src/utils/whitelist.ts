@@ -67,6 +67,8 @@ export async function getWhitelist(id: string) {
 }
 
 export async function getWhitelistPartialUsingMinecraftUuid(uuid: string) {
+	if (!Regex.Uuid.test(uuid)) return { error: Errors.NotFound };
+
 	const user = await db.query.serverWhitelists.findFirst({
 		columns: { banned: true, ban_reason: true },
 		where: eq(serverWhitelists.uuid, uuid),
@@ -186,15 +188,22 @@ export async function updateWhitelist(
 		banned?: boolean;
 		ban_reason?: string | null;
 	},
+	opts?: {
+		minecraftUuidOnly?: boolean;
+	},
 ) {
 	const isIdUuid = Regex.Uuid.test(id);
+	if (opts?.minecraftUuidOnly && !isIdUuid) return { error: Errors.NotFound };
+
 	const user = await db.query.serverWhitelists.findFirst({
-		where: or(
-			...(isIdUuid ? [eq(serverWhitelists.id, id)] : []),
-			eq(serverWhitelists.email, id.toLowerCase()),
-			...(isIdUuid ? [eq(serverWhitelists.uuid, id)] : []),
-			eq(serverWhitelists.discord_id, id),
-		),
+		where: opts?.minecraftUuidOnly
+			? eq(serverWhitelists.uuid, id)
+			: or(
+					...(isIdUuid ? [eq(serverWhitelists.id, id)] : []),
+					eq(serverWhitelists.email, id.toLowerCase()),
+					...(isIdUuid ? [eq(serverWhitelists.uuid, id)] : []),
+					eq(serverWhitelists.discord_id, id),
+				),
 	});
 	if (!user) return { error: Errors.NotFound };
 

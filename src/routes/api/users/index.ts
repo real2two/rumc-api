@@ -14,7 +14,7 @@ import { WhitelistModel } from "./model";
 
 export const usersRoute = new Elysia({
 	prefix: "/users",
-	tags: ["Whitelists"],
+	tags: ["Users"],
 })
 	.group("", (app) =>
 		app
@@ -66,7 +66,7 @@ export const usersRoute = new Elysia({
 	)
 	.group("", (app) =>
 		app
-			.use(auth([AuthRole.Admin, AuthRole.Server]))
+			.use(auth([AuthRole.Admin]))
 			.post(
 				"/:id/ban",
 				async ({ params, body: { reason }, set }) => {
@@ -110,11 +110,7 @@ export const usersRoute = new Elysia({
 						404: t.Object({ error: t.Literal(ErrorCodes.NotFound) }),
 					},
 				},
-			),
-	)
-	.group("", (app) =>
-		app
-			.use(auth([AuthRole.Admin]))
+			)
 			.post(
 				"",
 				async ({ body, set }) => {
