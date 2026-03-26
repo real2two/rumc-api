@@ -66,16 +66,10 @@ export async function getWhitelist(id: string) {
 	return { user };
 }
 
-export async function getWhitelistPartial(id: string) {
-	const isIdUuid = Regex.Uuid.test(id);
+export async function getWhitelistPartialUsingMinecraftUuid(uuid: string) {
 	const user = await db.query.serverWhitelists.findFirst({
-		columns: { uuid: true, banned: true, ban_reason: true },
-		where: or(
-			...(isIdUuid ? [eq(serverWhitelists.id, id)] : []),
-			eq(serverWhitelists.email, id.toLowerCase()),
-			...(isIdUuid ? [eq(serverWhitelists.uuid, id)] : []),
-			eq(serverWhitelists.discord_id, id),
-		),
+		columns: { banned: true, ban_reason: true },
+		where: eq(serverWhitelists.uuid, uuid),
 	});
 	if (!user) return { error: Errors.NotFound };
 
