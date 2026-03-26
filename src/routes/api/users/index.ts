@@ -6,6 +6,7 @@ import {
 	addWhitelist,
 	deleteWhitelist,
 	getWhitelist,
+	getWhitelistPartial,
 	getWhitelistRelations,
 	listWhitelists,
 	updateWhitelist,
@@ -18,7 +19,7 @@ export const usersRoute = new Elysia({
 })
 	.group("", (app) =>
 		app
-			.use(auth([AuthRole.Admin, AuthRole.Server, AuthRole.Read]))
+			.use(auth([AuthRole.Admin, AuthRole.Read]))
 			.get("", ({ query }) => listWhitelists(query), {
 				detail: {
 					summary: "List users",
@@ -58,6 +59,34 @@ export const usersRoute = new Elysia({
 						200: t.Object({
 							user: WhitelistModel.get,
 							relations: t.Array(WhitelistModel.get),
+						}),
+						404: t.Object({ error: t.Literal(ErrorCodes.NotFound) }),
+					},
+				},
+			),
+	)
+	.group("", (app) =>
+		app
+			.use(auth([AuthRole.Admin, AuthRole.Server, AuthRole.Read]))
+			//
+			.get(
+				"/:id/partial",
+				async ({ params, set }) => {
+					const { error, user } = await getWhitelistPartial(params.id);
+					if (error) {
+						set.status = error.status;
+						return { error: error.code };
+					}
+					return user;
+				},
+				{
+					detail: { summary: "Get partial user information" },
+					params: t.Object({ id: t.String() }),
+					response: {
+						200: t.Object({
+							uuid: t.Union([t.String(), t.Null()]),
+							banned: t.Boolean(),
+							ban_reason: t.Union([t.String(), t.Null()]),
 						}),
 						404: t.Object({ error: t.Literal(ErrorCodes.NotFound) }),
 					},
