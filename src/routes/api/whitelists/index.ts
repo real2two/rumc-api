@@ -26,7 +26,11 @@ export const whitelistsRoute = new Elysia({
 			return user;
 		},
 		{
-			detail: { summary: "Get Minecraft player's whitelist" },
+			detail: {
+				summary: "Get Minecraft player",
+				description:
+					"Similar to `GET /users/:id`, but limited to querying with Minecraft UUID only and returns partial information.",
+			},
 			params: t.Object({ minecraft_uuid: t.String({ format: "uuid" }) }),
 			response: {
 				200: t.Object({
@@ -53,7 +57,11 @@ export const whitelistsRoute = new Elysia({
 			return "No Content";
 		},
 		{
-			detail: { summary: "Ban user" },
+			detail: {
+				summary: "Ban Minecraft player",
+				description:
+					"Similar to `POST /users/:id/ban`, but limited to using Minecraft UUID only.",
+			},
 			params: t.Object({ minecraft_uuid: t.String({ format: "uuid" }) }),
 			body: WhitelistModel.ban,
 			response: {
@@ -78,7 +86,11 @@ export const whitelistsRoute = new Elysia({
 			return "No Content";
 		},
 		{
-			detail: { summary: "Unban user" },
+			detail: {
+				summary: "Unban Minecraft player",
+				description:
+					"Similar to `DELETE /users/:id/ban`, but limited to using Minecraft UUID only.",
+			},
 			params: t.Object({ minecraft_uuid: t.String({ format: "uuid" }) }),
 			response: {
 				204: t.Literal("No Content"),
