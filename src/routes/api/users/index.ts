@@ -6,7 +6,6 @@ import {
 	addWhitelist,
 	deleteWhitelist,
 	getWhitelist,
-	getWhitelistPartialUsingMinecraftUuid,
 	getWhitelistRelations,
 	listWhitelists,
 	updateWhitelist,
@@ -59,38 +58,6 @@ export const usersRoute = new Elysia({
 						200: t.Object({
 							user: WhitelistModel.get,
 							relations: t.Array(WhitelistModel.get),
-						}),
-						404: t.Object({ error: t.Literal(ErrorCodes.NotFound) }),
-					},
-				},
-			),
-	)
-	.group("", (app) =>
-		app
-			.use(auth([AuthRole.Admin, AuthRole.Server, AuthRole.Read]))
-			//
-			.get(
-				"/:id/whitelist",
-				async ({ params, set }) => {
-					const { error, user } = await getWhitelistPartialUsingMinecraftUuid(
-						params.id,
-					);
-					if (error) {
-						set.status = error.status;
-						return { error: error.code };
-					}
-					return user;
-				},
-				{
-					detail: {
-						summary: "Get partial user (for whitelist)",
-						description: "The params 'id' must be a Minecraft UUID.",
-					},
-					params: t.Object({ id: t.String() }),
-					response: {
-						200: t.Object({
-							banned: t.Boolean(),
-							ban_reason: t.Union([t.String(), t.Null()]),
 						}),
 						404: t.Object({ error: t.Literal(ErrorCodes.NotFound) }),
 					},
