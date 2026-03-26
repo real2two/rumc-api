@@ -23,8 +23,6 @@ declare global {
 			DISCORD_PUBLIC_KEY: string;
 			DISCORD_TOKEN: string;
 
-			DISCORD_GUILD_ID: string;
-			DISCORD_VERIFIED_ROLE_ID: string;
 			DISCORD_ADMIN_IDS: string;
 		}
 	}

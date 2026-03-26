@@ -1,5 +1,5 @@
-import { Routes } from "@buape/carbon";
-import { env } from "elysia";
+import { DiscordError, Routes } from "@buape/carbon";
+import { guildRoles } from "~/config/roles";
 import { client } from "~/discord";
 
 /**
@@ -8,16 +8,14 @@ import { client } from "~/discord";
  * @returns Whether or not the role was successfully given
  */
 export async function grantDiscordVerifiedRole(id: string) {
-	try {
-		await client.rest.put(
-			Routes.guildMemberRole(
-				env.DISCORD_GUILD_ID,
-				id,
-				env.DISCORD_VERIFIED_ROLE_ID,
-			),
-		);
-	} catch (err) {
-		console.error("Failed to grant Discord role:", err);
+	for (const [guildId, roleId] of guildRoles) {
+		try {
+			await client.rest.put(Routes.guildMemberRole(guildId, id, roleId));
+		} catch (err) {
+			if (!(err instanceof DiscordError) || err.message !== "Unknown User") {
+				console.error("Failed to grant Discord role:", err);
+			}
+		}
 	}
 }
 
@@ -27,15 +25,13 @@ export async function grantDiscordVerifiedRole(id: string) {
  * @returns Whether or not the role was successfully given
  */
 export async function revokeDiscordVerifiedRole(id: string) {
-	try {
-		await client.rest.delete(
-			Routes.guildMemberRole(
-				env.DISCORD_GUILD_ID,
-				id,
-				env.DISCORD_VERIFIED_ROLE_ID,
-			),
-		);
-	} catch (err) {
-		console.error("Failed to revoke Discord role:", err);
+	for (const [guildId, roleId] of guildRoles) {
+		try {
+			await client.rest.delete(Routes.guildMemberRole(guildId, id, roleId));
+		} catch (err) {
+			if (!(err instanceof DiscordError) || err.message !== "Unknown User") {
+				console.error("Failed to revoke Discord role:", err);
+			}
+		}
 	}
 }
