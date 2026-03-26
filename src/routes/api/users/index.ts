@@ -80,7 +80,7 @@ export const usersRoute = new Elysia({
 					return user;
 				},
 				{
-					detail: { summary: "Get partial user information" },
+					detail: { summary: "Get partial user" },
 					params: t.Object({ id: t.String() }),
 					response: {
 						200: t.Object({
