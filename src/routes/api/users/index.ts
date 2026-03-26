@@ -70,10 +70,10 @@ export const usersRoute = new Elysia({
 			.use(auth([AuthRole.Admin, AuthRole.Server, AuthRole.Read]))
 			//
 			.get(
-				"/:minecraft_uuid/whitelist",
+				"/:id/whitelist",
 				async ({ params, set }) => {
 					const { error, user } = await getWhitelistPartialUsingMinecraftUuid(
-						params.minecraft_uuid,
+						params.id,
 					);
 					if (error) {
 						set.status = error.status;
@@ -84,8 +84,9 @@ export const usersRoute = new Elysia({
 				{
 					detail: {
 						summary: "Get partial user (for whitelist)",
+						description: "The params 'id' must be a Minecraft UUID.",
 					},
-					params: t.Object({ minecraft_uuid: t.String() }),
+					params: t.Object({ id: t.String() }),
 					response: {
 						200: t.Object({
 							banned: t.Boolean(),
