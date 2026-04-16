@@ -34,10 +34,12 @@ class WhoIsDiscordCommand extends Command {
 				ephemeral: true,
 			});
 		}
+
+		const debug = DISCORD_ADMIN_IDS.includes(interaction.userId ?? "");
+
 		if (!whitelisted.uuid) {
 			return interaction.reply({
-				content:
-					"❌ The following user doesn't have a Minecraft account linked.",
+				content: `❌ The following user doesn't have a Minecraft account linked.${createWhoIsDebugText({ whitelisted, debug })}`,
 				ephemeral: true,
 			});
 		}
@@ -45,7 +47,7 @@ class WhoIsDiscordCommand extends Command {
 		const player = await getMinecraftPlayer(whitelisted.uuid);
 		if (!player) {
 			return interaction.reply({
-				content: `🛑 Failed to find player with the Minecraft UUID \`${whitelisted.uuid}\`.`,
+				content: `🛑 Failed to find player with the Minecraft UUID \`${whitelisted.uuid}\`.${createWhoIsDebugText({ whitelisted, debug })}`,
 				ephemeral: true,
 			});
 		}
@@ -54,7 +56,7 @@ class WhoIsDiscordCommand extends Command {
 			content: createWhoIsText({
 				whitelisted,
 				username: player.username,
-				debug: DISCORD_ADMIN_IDS.includes(interaction.userId ?? ""),
+				debug,
 			}),
 			allowedMentions: {},
 			ephemeral: true,
@@ -134,6 +136,16 @@ function createWhoIsText({
 					? "Verified as a Rutgers student 🎉"
 					: "Verified as a VIP 💼"
 		}` +
-		`${debug ? `\n### Debug\n\`\`\`${JSON.stringify(whitelisted, null, 2)}\`\`\`` : ""}`
+		createWhoIsDebugText({ whitelisted, debug })
 	);
+}
+
+function createWhoIsDebugText({
+	whitelisted,
+	debug,
+}: {
+	whitelisted: typeof serverWhitelists.$inferSelect;
+	debug: boolean;
+}) {
+	return `${debug ? `\n### Debug\n\`\`\`${JSON.stringify(whitelisted, null, 2)}\`\`\`` : ""}`;
 }
