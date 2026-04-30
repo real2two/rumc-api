@@ -46,7 +46,7 @@ class WunverifyDiscordCommand extends Command {
 						content: "❌ Failed to find user",
 						ephemeral: true,
 					});
-				case ErrorCodes.CannotDeleteBannedUser:
+				case ErrorCodes.CannotPerformThisActionToBannedUser:
 					return interaction.reply({
 						content: "❌ Cannot delete banned user",
 						ephemeral: true,

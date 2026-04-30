@@ -190,6 +190,7 @@ export async function updateWhitelist(
 	},
 	opts?: {
 		minecraftUuidOnly?: boolean;
+		disallowBanned?: boolean;
 	},
 ) {
 	const isIdUuid = Regex.Uuid.test(id);
@@ -206,6 +207,9 @@ export async function updateWhitelist(
 				),
 	});
 	if (!user) return { error: Errors.NotFound };
+	if (opts?.disallowBanned && user.banned) {
+		return { error: Errors.CannotPerformThisActionToBannedUser };
+	}
 
 	if (Object.keys(data).length > 0) {
 		// If player isn't banned or ban reason's length is 0, set it to null
@@ -247,7 +251,7 @@ export async function deleteWhitelist(id: string) {
 		),
 	});
 	if (!user) return { error: Errors.NotFound };
-	if (user.banned) return { error: Errors.CannotDeleteBannedUser };
+	if (user.banned) return { error: Errors.CannotPerformThisActionToBannedUser };
 
 	const deletedUsers = await db
 		.delete(serverWhitelists)

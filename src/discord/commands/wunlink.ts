@@ -39,14 +39,21 @@ export class WunlinkCommand extends Command {
 		const user = interaction.options.getUser("user");
 		if (!user) return;
 
-		const { error } = await updateWhitelist(user.id, {
-			uuid: null,
-		});
+		const { error } = await updateWhitelist(
+			user.id,
+			{ uuid: null },
+			{ disallowBanned: true },
+		);
 		if (error) {
 			switch (error.code) {
 				case ErrorCodes.NotFound:
 					return interaction.reply({
 						content: "❌ Failed to find user",
+						ephemeral: true,
+					});
+				case ErrorCodes.CannotPerformThisActionToBannedUser:
+					return interaction.reply({
+						content: "❌ Cannot unlink banned user",
 						ephemeral: true,
 					});
 				default:

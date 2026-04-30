@@ -7,7 +7,7 @@ export enum ErrorCodes {
 	ParentReachedGuestLimit = "parent_reached_guest_limit",
 	MinecraftUuidUsed = "minecraft_uuid_used",
 	DiscordIdUsed = "discord_id_used",
-	CannotDeleteBannedUser = "cannot_delete_banned_user",
+	CannotPerformThisActionToBannedUser = "cannot_perform_this_action_to_banned_user",
 }
 
 export const Errors = {
@@ -22,8 +22,8 @@ export const Errors = {
 	},
 	MinecraftUuidUsed: { status: 409, code: ErrorCodes.MinecraftUuidUsed },
 	DiscordIdUsed: { status: 409, code: ErrorCodes.DiscordIdUsed },
-	CannotDeleteBannedUser: {
+	CannotPerformThisActionToBannedUser: {
 		status: 409,
-		code: ErrorCodes.CannotDeleteBannedUser,
+		code: ErrorCodes.CannotPerformThisActionToBannedUser,
 	},
 } as const;

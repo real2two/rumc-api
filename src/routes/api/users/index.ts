@@ -189,7 +189,7 @@ export const usersRoute = new Elysia({
 						404: t.Object({
 							error: t.Union([
 								t.Literal(ErrorCodes.NotFound),
-								t.Literal(ErrorCodes.CannotDeleteBannedUser),
+								t.Literal(ErrorCodes.CannotPerformThisActionToBannedUser),
 							]),
 						}),
 					},
